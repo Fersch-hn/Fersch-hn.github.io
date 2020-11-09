@@ -60,15 +60,18 @@ var svg = d3.select("svg")
     .attr("width", w + m[1] + m[3])
     .attr("height", h + m[0] + m[2])
     .append("svg:g")
-    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
-
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+    //Border SVG
+    .attr("style", "outline: thin solid black;"); 
+   
 //Titles
 
 svg.append("text")
     .attr('class', 'title')
     .attr('y', -75)
     .attr('x', 290)
-    .text("Input");
+    .text("Input")
+   
 
 svg.append("text")
     .attr('class', 'title')
@@ -76,11 +79,7 @@ svg.append("text")
     .attr('x', 900)
     .text("Output");
 
-//Borders
-//d3.select("body").append("svg")
-//    .attr("style", "outline: thin solid red;")   //This will do the job
-//    .attr("width", w)
-//    .attr("height", h);
+
 
 
 // Load the data and visualization
