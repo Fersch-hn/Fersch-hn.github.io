@@ -2,6 +2,14 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+//<script>
+//    function myFunction() {
+//  var str = "Output: Title: m/s : 200";
+//  var res = str.split(":");
+//  document.getElementById("demo").innerHTML = res;
+//}
+//</script>
+
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight - 540, 240]);
 
@@ -92,21 +100,57 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
             }
         };
         return d;
-    });  
-
-    console.log(data);
+    });      
   
+    
+    //Get Magnitudes. And Create new array for clean key names.
+    var magnitudes = [];
+    var newData = [];
+    //This variable for preventing adding magnitudes multiple times
+    var firstIteration = true;
+
+    for (let e in data) {
+
+        var unsplitted = data[e];
+        let newObject = {}
+
+        for (let i in unsplitted) {
+            let res = i.split(":")
+
+            if (firstIteration) {
+                magnitudes.push(res[1]);
+            }                   
+
+            newObject[res[0]] = unsplitted[i];                      
+        } 
+        
+        newData.push(newObject);          
+        firstIteration = false;
+    }
+
+    data = newData;   
+    
     // Extract the list of numerical dimensions and create a scale for each.
     // Modified this section to be able to have string and numerical
-    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
+    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {   
+
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scale.linear()
-                .domain(d3.extent(data, function (d) { return +d[k]; }))
+
+                //Pending Change Data
+                .domain(d3.extent(data, function (d) {
+                    console.log(d);
+                    return +d[k];
+                }))
                 .range([h, 0]));
         }
         else {                   
             return (true) && (yscale[k] = d3.scale.ordinal()
-                .domain(data.map(function (d) { return d[k]; }))
+                .domain(data.map(function (d) {
+                    console.log(d, k);
+                   
+                    return d[k];
+                }))
                 .range([h, 0]));
         }        
     }));
@@ -167,15 +211,24 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
                 delete dragging[d];
             }))
 
+    
+
     // Add an axis and title.
     g.append("svg:g")
         .attr("class", "axis")
         .attr("transform", "translate(0,0)")
-        .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); })
+        .each(function (d) {            
+            //Separate Magnitudes and Label Names                
+            //var res = d.split(":");
+            //d = res[0];            
+            //magnitudes.push(res[1]);         
+          
+            d3.select(this).call(axis.scale(yscale[d]));
+        })
         .append("svg:text")
         .attr("text-anchor", "middle")
-//Change Label Spacing. Use Math.
-        .attr("y", -50/*function (d, i) { return i % 2 == 0 ? -14 : -30 }*/)
+//Change Label Spacing.
+        .attr("y", -50)
         .attr("x", 0)
         .attr("class", "label")
         .text(String)
@@ -188,8 +241,10 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
         .attr('y', -30)
-        .attr('x', 0)       
-        .text("Magnitude");
+        .attr('x', 0)
+        .text('Magnitude');
+        //.each(function (d) { console.log(d); debugger })
+        
 
     g.append("svg:g")
         .append("text")
@@ -345,7 +400,7 @@ function selection_stats(opacity, n, total) {
 function highlight(d) {
     d3.select("#foreground").style("opacity", "0.25");
     d3.selectAll(".row").style("opacity", function (p) { return (d.group == p) ? null : "0.3" });
-    path(d, highlighted, color(d.group, 1));
+    path(d, highlighted, color("test", 1));
 }
 
 // Remove highlight
@@ -528,9 +583,7 @@ function paths(selected, ctx, count) {
 
     selection_stats(opacity, n, data.length)
 
-    shuffled_data = _.shuffle(selected);
-
-    console.log(shuffled_data);
+    shuffled_data = _.shuffle(selected); 
 
     data_table(shuffled_data.slice(0, 25));
 
