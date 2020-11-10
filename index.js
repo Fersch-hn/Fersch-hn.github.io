@@ -26,7 +26,7 @@ var m = [100, 0, 10, 0],
     excluded_groups = [];
 
 var colors = {
-    "test": [185, 56, 73]   
+    "test": [185, 56, 73]
 };
 
 // Scale chart and canvas height
@@ -63,8 +63,8 @@ var svg = d3.select("svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
     //Border SVG
-    .attr("style", "outline: thin solid black;"); 
-   
+    .attr("style", "outline: thin solid black;");
+
 //Titles
 
 svg.append("text")
@@ -72,7 +72,7 @@ svg.append("text")
     .attr('y', -75)
     .attr('x', 290)
     .text("Input")
-   
+
 
 svg.append("text")
     .attr('class', 'title')
@@ -84,7 +84,7 @@ svg.append("text")
 
 
 // Load the data and visualization
-d3.csv("http://192.168.0.3:8080", function (raw_data) {
+d3.csv("http://127.0.0.1:8080", function (raw_data) {
     // Convert quantitative scales to floats
     data = raw_data.map(function (d) {
         for (var k in d) {
@@ -93,174 +93,221 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
             }
         };
         return d;
-    });     
-    
+    });
+
     //Get Magnitudes. And Create new array for clean key names.
     var magnitudes = [];
     var newData = [];
     //This variable for preventing adding magnitudes multiple times
-    var firstIteration = true;
+    debugger;
+
+    var header = data[0];
+
+    for (var key in header) {
+        console.log(' name=' + key + ' value=' + header[key]);
+
+        let res = key.split(":");
+        let magnitudeObject = {};
+
+        if (res.length > 0) {
+            magnitudeObject.io = res[0];
+        }
+        if (res.length > 1) {
+            magnitudeObject.name = res[1];
+        }
+        if (res.length > 2) {
+            magnitudeObject.value = res[2];
+        }
+        if (res.length > 3) {
+            magnitudeObject.target = res[3];
+        } else {
+            magnitudeObject.target = null;
+        }
+
+
+
+
+        magnitudes.push(magnitudeObject);
+
+        newObject[res[0]] = unsplitted[i];
+    }
+
+
+
+    //var a = [1, 2, 3]
+    //var b = ['a', 'b', 'c']
+
+    //var c = a.map(function (e, i) {
+    //    return [e, b[i]];
+    //});
+
+    //console.log(c)
+
+
+
+
 
     for (let e in data) {
-
+        debugger;
         var unsplitted = data[e];
         let newObject = {}
 
-        for (let i in unsplitted) {
-            let res = i.split(":")
+        var data2 = magnitude.map(function (m, i) {
 
-            if (firstIteration) {
-               
 
-                let magnitudeObject = { name :  res[0], value: res[1]};
+            return new { key1: m.name, value: unsplitted[i] }
 
-                magnitudes.push(magnitudeObject);
-            }                  
-            newObject[res[0]] = unsplitted[i];                      
-        }         
-        newData.push(newObject);          
-        firstIteration = false;
+        })
+
+        var newrow = {};
+        data2.map(function (d) {
+            newrow[d.name] = d.value;
+        })
+
+        newData.push(newrow);
+
     }
-    data = newData;   
-    
-    // Extract the list of numerical dimensions and create a scale for each.
-    // Modified this section to be able to have string and numerical
-    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {   
+    data = newData;
 
-        if (_.isNumber(data[0][k])) {
-            return (true) && (yscale[k] = d3.scale.linear()
-                .domain(d3.extent(data, function (d) { return +d[k]; }))
-                .range([h, 0]));
-        }
-        else {                   
-            return (true) && (yscale[k] = d3.scale.ordinal()
-                .domain(data.map(function (d) { return d[k]; }))
-                .range([h, 0]));
-        }        
-    }));
 
-    // Add a group element for each dimension.
-    var g = svg.selectAll(".dimension")
-        .data(dimensions)
-        .enter().append("svg:g")
-        .attr("class", "dimension")
-        .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
-        .call(d3.behavior.drag()
-            .on("dragstart", function (d) {
-                dragging[d] = this.__origin__ = xscale(d);
-                this.__dragged__ = false;
-                d3.select("#foreground").style("opacity", "0.35");
-            })
-            .on("drag", function (d) {
-                dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                dimensions.sort(function (a, b) { return position(a) - position(b); });
-                xscale.domain(dimensions);
-                g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
-                brush_count++;
-                this.__dragged__ = true;
+// Extract the list of numerical dimensions and create a scale for each.
+// Modified this section to be able to have string and numerical
+xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
 
-                // Feedback for axis deletion if dropped
-                if (dragging[d] < 12 || dragging[d] > w - 12) {
-                    d3.select(this).select(".background").style("fill", "#b00");
-                } else {
-                    d3.select(this).select(".background").style("fill", null);
-                }
-            })
-            .on("dragend", function (d) {
-                if (!this.__dragged__) {
-                    // no movement, invert axis
-                    var extent = invert_axis(d);
+    if (_.isNumber(data[0][k])) {
+        return (true) && (yscale[k] = d3.scale.linear()
+            .domain(d3.extent(data, function (d) { return +d[k]; }))
+            .range([h, 0]));
+    }
+    else {
+        return (true) && (yscale[k] = d3.scale.ordinal()
+            .domain(data.map(function (d) { return d[k]; }))
+            .range([h, 0]));
+    }
+}));
 
-                } else {
-                    // reorder axes
-                    d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
-
-                    var extent = yscale[d].brush.extent();
-                }
-
-                // remove axis if dragged all the way left
-                if (dragging[d] < 12 || dragging[d] > w - 12) {
-                    remove_axis(d, g);
-                }
-
-                // TODO required to avoid a bug
-                xscale.domain(dimensions);
-                update_ticks(d, extent);
-
-                // rerender
-                d3.select("#foreground").style("opacity", null);
-                brush();
-                delete this.__dragged__;
-                delete this.__origin__;
-                delete dragging[d];
-            }))
-
-    
-
-    // Add an axis and title.
-    g.append("svg:g")
-        .attr("class", "axis")
-        .attr("transform", "translate(0,0)")
-        .each(function (d) {                      
-            d3.select(this).call(axis.scale(yscale[d]));
+// Add a group element for each dimension.
+var g = svg.selectAll(".dimension")
+    .data(dimensions)
+    .enter().append("svg:g")
+    .attr("class", "dimension")
+    .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
+    .call(d3.behavior.drag()
+        .on("dragstart", function (d) {
+            dragging[d] = this.__origin__ = xscale(d);
+            this.__dragged__ = false;
+            d3.select("#foreground").style("opacity", "0.35");
         })
-        .append("svg:text")
-        .attr("text-anchor", "middle")
-//Change Label Spacing.
-        .attr("y", -50)
-        .attr("x", 0)
-        .attr("class", "label")
-        .text(String)
-        .append("title")
-        .text("Click to invert. Drag to reorder");
+        .on("drag", function (d) {
+            dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+            dimensions.sort(function (a, b) { return position(a) - position(b); });
+            xscale.domain(dimensions);
+            g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
+            brush_count++;
+            this.__dragged__ = true;
 
-    //Add Extra Label
-    g.append("svg:g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
-        .attr('y', -30)
-        .attr('x', 0)
-        .text((d) => {
-            console.log(d, magnitudes);
-                
-            //Get Magnitude Value
-            let index = magnitudes.findIndex(m => m.name === d);
-            let obj = magnitudes[index];
-            console.log(obj.value);
-            
-            return obj.value;
+            // Feedback for axis deletion if dropped
+            if (dragging[d] < 12 || dragging[d] > w - 12) {
+                d3.select(this).select(".background").style("fill", "#b00");
+            } else {
+                d3.select(this).select(".background").style("fill", null);
+            }
         })
-        
+        .on("dragend", function (d) {
+            if (!this.__dragged__) {
+                // no movement, invert axis
+                var extent = invert_axis(d);
 
-    g.append("svg:g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
-        .attr('y', -10)
-        .attr('x', 0)
-        .text("Target");   
+            } else {
+                // reorder axes
+                d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
 
-    // Add and store a brush for each axis.
-    g.append("svg:g")
-        .attr("class", "brush")
-        .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
-        .selectAll("rect")
-        .style("visibility", null)
-        .attr("x", -23)
-        .attr("width", 36)
-        .append("title")
-        .text("Drag up or down to brush along this axis");
+                var extent = yscale[d].brush.extent();
+            }
 
-    g.selectAll(".extent")
-        .append("title")
-        .text("Drag or resize this filter");
+            // remove axis if dragged all the way left
+            if (dragging[d] < 12 || dragging[d] > w - 12) {
+                remove_axis(d, g);
+            }
+
+            // TODO required to avoid a bug
+            xscale.domain(dimensions);
+            update_ticks(d, extent);
+
+            // rerender
+            d3.select("#foreground").style("opacity", null);
+            brush();
+            delete this.__dragged__;
+            delete this.__origin__;
+            delete dragging[d];
+        }))
 
 
-    legend = create_legend(colors, brush);
 
-    // Render full foreground
-    brush();
+// Add an axis and title.
+g.append("svg:g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0,0)")
+    .each(function (d) {
+        d3.select(this).call(axis.scale(yscale[d]));
+    })
+    .append("svg:text")
+    .attr("text-anchor", "middle")
+    //Change Label Spacing.
+    .attr("y", -50)
+    .attr("x", 0)
+    .attr("class", "label")
+    .text(String)
+    .append("title")
+    .text("Click to invert. Drag to reorder");
+
+//Add Extra Label
+g.append("svg:g")
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr('class', 'axis-label')
+    .attr('y', -30)
+    .attr('x', 0)
+    .text((d) => {
+        console.log(d, magnitudes);
+
+        //Get Magnitude Value
+        let index = magnitudes.findIndex(m => m.name === d);
+        let obj = magnitudes[index];
+        console.log(obj.value);
+
+        return obj.value;
+    })
+
+
+g.append("svg:g")
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr('class', 'axis-label')
+    .attr('y', -10)
+    .attr('x', 0)
+    .text("Target");
+
+// Add and store a brush for each axis.
+g.append("svg:g")
+    .attr("class", "brush")
+    .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
+    .selectAll("rect")
+    .style("visibility", null)
+    .attr("x", -23)
+    .attr("width", 36)
+    .append("title")
+    .text("Drag up or down to brush along this axis");
+
+g.selectAll(".extent")
+    .append("title")
+    .text("Drag or resize this filter");
+
+
+legend = create_legend(colors, brush);
+
+// Render full foreground
+brush();
 
 });
 
@@ -570,7 +617,7 @@ function paths(selected, ctx, count) {
 
     selection_stats(opacity, n, data.length)
 
-    shuffled_data = _.shuffle(selected); 
+    shuffled_data = _.shuffle(selected);
 
     data_table(shuffled_data.slice(0, 25));
 
