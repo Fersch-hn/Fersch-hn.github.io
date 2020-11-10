@@ -100,8 +100,7 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
             }
         };
         return d;
-    });      
-  
+    });     
     
     //Get Magnitudes. And Create new array for clean key names.
     var magnitudes = [];
@@ -119,15 +118,12 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
 
             if (firstIteration) {
                 magnitudes.push(res[1]);
-            }                   
-
+            }                  
             newObject[res[0]] = unsplitted[i];                      
-        } 
-        
+        }         
         newData.push(newObject);          
         firstIteration = false;
     }
-
     data = newData;   
     
     // Extract the list of numerical dimensions and create a scale for each.
@@ -136,21 +132,12 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
 
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scale.linear()
-
-                //Pending Change Data
-                .domain(d3.extent(data, function (d) {
-                    console.log(d);
-                    return +d[k];
-                }))
+                .domain(d3.extent(data, function (d) { return +d[k]; }))
                 .range([h, 0]));
         }
         else {                   
             return (true) && (yscale[k] = d3.scale.ordinal()
-                .domain(data.map(function (d) {
-                    console.log(d, k);
-                   
-                    return d[k];
-                }))
+                .domain(data.map(function (d) { return d[k]; }))
                 .range([h, 0]));
         }        
     }));
