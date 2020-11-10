@@ -2,13 +2,6 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
-//<script>
-//    function myFunction() {
-//  var str = "Output: Title: m/s : 200";
-//  var res = str.split(":");
-//  document.getElementById("demo").innerHTML = res;
-//}
-//</script>
 
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight - 540, 240]);
@@ -117,7 +110,11 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
             let res = i.split(":")
 
             if (firstIteration) {
-                magnitudes.push(res[1]);
+               
+
+                let magnitudeObject = { name :  res[0], value: res[1]};
+
+                magnitudes.push(magnitudeObject);
             }                  
             newObject[res[0]] = unsplitted[i];                      
         }         
@@ -204,12 +201,7 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
     g.append("svg:g")
         .attr("class", "axis")
         .attr("transform", "translate(0,0)")
-        .each(function (d) {            
-            //Separate Magnitudes and Label Names                
-            //var res = d.split(":");
-            //d = res[0];            
-            //magnitudes.push(res[1]);         
-          
+        .each(function (d) {                      
             d3.select(this).call(axis.scale(yscale[d]));
         })
         .append("svg:text")
@@ -229,8 +221,16 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         .attr('class', 'axis-label')
         .attr('y', -30)
         .attr('x', 0)
-        .text('Magnitude');
-        //.each(function (d) { console.log(d); debugger })
+        .text((d) => {
+            console.log(d, magnitudes);
+                
+            //Get Magnitude Value
+            let index = magnitudes.findIndex(m => m.name === d);
+            let obj = magnitudes[index];
+            console.log(obj.value);
+            
+            return obj.value;
+        })
         
 
     g.append("svg:g")
