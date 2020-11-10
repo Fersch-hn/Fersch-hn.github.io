@@ -95,34 +95,51 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         return d;
     });     
     
-    //Get Magnitudes. And Create new array for clean key names.
-    var magnitudes = [];
-    var newData = [];
-    //This variable for preventing adding magnitudes multiple times
-    var firstIteration = true;
+    //Get Magnitudes, Input/Outputs and Targets
+    var magnitudes = [];    
+    var header = data[0];
+    var oldLabels = [];
 
-    for (let e in data) {
+    for (var key in header) {
+        oldLabels.push(key);
+        let res = key.split(":");
+        let magnitudeObject = {};
 
-        var unsplitted = data[e];
-        let newObject = {}
-
-        for (let i in unsplitted) {
-            let res = i.split(":")
-
-            if (firstIteration) {
-               
-
-                let magnitudeObject = { name :  res[0], value: res[1]};
-
-                magnitudes.push(magnitudeObject);
-            }                  
-            newObject[res[0]] = unsplitted[i];                      
-        }         
-        newData.push(newObject);          
-        firstIteration = false;
+        if (res.length > 0) {
+            magnitudeObject.name = res[0];
+        }
+        if (res.length > 1) {
+            magnitudeObject.value = res[1];
+        }
+        if (res.length > 2) {
+            magnitudeObject.io = res[2];
+        }
+        if (res.length > 3) {
+            magnitudeObject.target = res[3];
+        } else {
+            magnitudeObject.target = null;
+        }
+        magnitudes.push(magnitudeObject);       
     }
-    data = newData;   
-    
+
+    //Create Data with clean key names
+    var newData = []; 
+    for (let e in data) {       
+        var unsplitted = data[e];       
+       
+        var data2 = magnitudes.map(function (m, i) {           
+          
+            let key = oldLabels[i];         
+            return { labelName: m.name, value: unsplitted[key] }
+        })      
+        
+        let newrow = {};
+        data2.map(function (d) { newrow[d.labelName] = d.value; });    
+        newData.push(newrow);
+    }
+
+    data = newData;  
+      
     // Extract the list of numerical dimensions and create a scale for each.
     // Modified this section to be able to have string and numerical
     xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {   
@@ -221,14 +238,8 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         .attr('class', 'axis-label')
         .attr('y', -30)
         .attr('x', 0)
-        .text((d) => {
-            console.log(d, magnitudes);
-                
-            //Get Magnitude Value
-            let index = magnitudes.findIndex(m => m.name === d);
-            let obj = magnitudes[index];
-            console.log(obj.value);
-            
+        .text((d) => {                   
+            let obj = magnitudes.find(m => m.name === d);                   
             return obj.value;
         })
         
