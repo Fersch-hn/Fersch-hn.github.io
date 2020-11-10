@@ -101,10 +101,11 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
     var oldLabels = [];
 
     for (var key in header) {
+
         oldLabels.push(key);
         let res = key.split(":");
-        let magnitudeObject = {};
-
+        let magnitudeObject = {};       
+       
         if (res.length > 0) {
             magnitudeObject.name = res[0];
         }
@@ -119,7 +120,7 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         } else {
             magnitudeObject.target = null;
         }
-        magnitudes.push(magnitudeObject);       
+        magnitudes.push(magnitudeObject);      
     }
 
     //Create Data with clean key names
@@ -231,7 +232,8 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         .append("title")
         .text("Click to invert. Drag to reorder");
 
-    //Add Extra Label
+    //Add Extra Labels
+    //Measure Magnitudes
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
@@ -243,14 +245,19 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
             return obj.value;
         })
         
-
+    //Target
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
         .attr('y', -10)
         .attr('x', 0)
-        .text("Target");   
+        .text((d) => {
+            let obj = magnitudes.find(m => m.name === d);           
+       
+            if (obj.target === null) { return " "}
+            else { return obj.target; }           
+        });   
 
     // Add and store a brush for each axis.
     g.append("svg:g")
