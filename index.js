@@ -10,6 +10,7 @@ var m = [100, 0, 10, 0],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
+    xscaleIO = d3.scale.ordinal().rangePoints([0, w], 1),
     yscale = {},
     dragging = {},
     line = d3.svg.line(),
@@ -20,6 +21,7 @@ var m = [100, 0, 10, 0],
     background,
     highlighted,
     dimensions,
+    dimensionsIO,
     legend,
     render_speed = 50,
     brush_count = 0,
@@ -63,25 +65,7 @@ var svg = d3.select("svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
     //Border SVG
-    .attr("style", "outline: thin solid black;"); 
-   
-//Titles
-
-svg.append("text")
-    .attr('class', 'title')
-    .attr('y', -75)
-    .attr('x', 290)
-    .text("Input")
-   
-
-svg.append("text")
-    .attr('class', 'title')
-    .attr('y', -75)
-    .attr('x', 900)
-    .text("Output");
-
-
-
+    .attr("style", "outline: thin solid black;");    
 
 // Load the data and visualization
 d3.csv("http://192.168.0.3:8080", function (raw_data) {
@@ -128,8 +112,7 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
     for (let e in data) {       
         var unsplitted = data[e];       
        
-        var data2 = magnitudes.map(function (m, i) {           
-          
+        var data2 = magnitudes.map(function (m, i) {          
             let key = oldLabels[i];         
             return { labelName: m.name, value: unsplitted[key] }
         })      
@@ -139,12 +122,55 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         newData.push(newrow);
     }
 
-    data = newData;  
-      
-    // Extract the list of numerical dimensions and create a scale for each.
-    // Modified this section to be able to have string and numerical
-    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {   
+    data = newData;     
 
+    //Group Data for Inputs/Outputs
+    var inputs = [];
+    var outputs = [];
+    data.map(function (d) {              
+        var newInput = {};
+        var newOutput = {};
+
+        var result = Object.keys(d).map(function (n, i) {          
+
+            let obj = magnitudes.find(m => m.name === n);         
+
+            if (obj.io === "Input") {
+                newInput[n] = d[n];
+            }
+            else if (obj.io === "Output") {
+                newOutput[n] = d[n];
+            }
+        });
+        inputs.push(newInput);
+        outputs.push(newOutput);           
+    });
+
+    var groupedData = [];
+    groupedData.push({ key: "Input", values: inputs });
+    groupedData.push({ key: "Output", values: outputs });     
+  
+    var dimensionsIO = [];
+    var cummulative = 0;
+    groupedData.forEach(function (val, i) {
+        val.cummulative = cummulative;
+        cummulative += val.values.length;
+        val.values.forEach(function (values) {
+            values.parentKey = val.key;
+            dimensionsIO.push(i);
+        })
+    }); 
+
+    //Scale for Inputs/Outputs
+    xscaleIO.domain(dimensionsIO = d3.keys(groupedData).filter(function (k) {     
+        return (true) && (yscale[k] = d3.scale.ordinal()
+            .domain(groupedData.map(function (d) { return d[k]; }))
+                .range([h, 0]));
+        }        
+    )); 
+
+    //Scale for the rest of the data
+    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {       
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scale.linear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
@@ -155,8 +181,8 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
                 .domain(data.map(function (d) { return d[k]; }))
                 .range([h, 0]));
         }        
-    }));
-
+    }));     
+    
     // Add a group element for each dimension.
     var g = svg.selectAll(".dimension")
         .data(dimensions)
@@ -213,15 +239,29 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
                 delete dragging[d];
             }))
 
-    
+    // Add a group element for each input output.   
+    svg.selectAll(".dimensionIO")
+        .data(dimensionsIO)
+        .enter().append("svg:g")
+        .attr("class", "dimensionIO")
+        .attr("transform", function (d) { return "translate( " + xscaleIO(d) + " )"; })
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'axis-label')
+        .attr('y', -80)
+        .attr('x', 0)
+        .text(function (d) {
+            let obj = groupedData[d];         
+            return obj.key;
+        });  
 
     // Add an axis and title.
     g.append("svg:g")
-        .attr("class", "axis")
+        .attr("class", "axis")       
         .attr("transform", "translate(0,0)")
-        .each(function (d) {                      
+        .each(function (d) {                 
             d3.select(this).call(axis.scale(yscale[d]));
-        })
+        })      
         .append("svg:text")
         .attr("text-anchor", "middle")
 //Change Label Spacing.
@@ -230,7 +270,8 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         .attr("class", "label")
         .text(String)
         .append("title")
-        .text("Click to invert. Drag to reorder");
+        .text("Click to invert. Drag to reorder");   
+       
 
     //Add Extra Labels
     //Measure Magnitudes
@@ -261,7 +302,7 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
 
     // Add and store a brush for each axis.
     g.append("svg:g")
-        .attr("class", "brush")
+        .attr("class", "brush")    
         .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
         .selectAll("rect")
         .style("visibility", null)
