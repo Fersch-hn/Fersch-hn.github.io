@@ -286,7 +286,7 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
             return obj.value;
         })
         
-    //Target
+    //Target    
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
@@ -295,10 +295,36 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
         .attr('x', 0)
         .text((d) => {
             let obj = magnitudes.find(m => m.name === d);           
-       
-            if (obj.target === null) { return " "}
-            else { return obj.target; }           
-        });   
+            if (obj.target === null) { return " " }
+            else { return obj.target; }
+        });
+   
+    var firstTarget = 1;    
+    g.append("svg:g")
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'axis-label')
+        .attr('y', -10)
+        .attr('x', -40)
+        .text((d) => {           
+            let obj = magnitudes.find(m => m.name === d);
+            if (!(obj.target === null)) { firstTarget++ }
+            if (firstTarget === 2) { return "Target: " }
+        });
+
+    var firstTarget2 = 1;
+    g.append("line")
+        .attr("x1", -65)
+        .attr("y1", -80)
+        .attr("x2", -65)
+        .attr("y2", 130)
+        .style("stroke", function (d) {
+            let obj = magnitudes.find(m => m.name === d);
+            if (!(obj.target === null)) { firstTarget2++ }
+            if (firstTarget2 === 2) { return "grey"; }
+        })
+        .style("fill", "red")
+        .style("stroke-width", 4);
 
     // Add and store a brush for each axis.
     g.append("svg:g")
