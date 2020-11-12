@@ -68,7 +68,7 @@ var svg = d3.select("svg")
     .attr("style", "outline: thin solid black;");    
 
 // Load the data and visualization
-d3.csv("http://192.168.0.3:8080", function (raw_data) {
+d3.csv(" http://127.0.0.1:8080", function (raw_data) {
     // Convert quantitative scales to floats
     data = raw_data.map(function (d) {
         for (var k in d) {
@@ -343,6 +343,342 @@ d3.csv("http://192.168.0.3:8080", function (raw_data) {
 
 
     legend = create_legend(colors, brush);
+
+    //function tabulate(data, columns) {
+    //    var table = d3.select("#table").append("table")
+    //        .attr("style", "margin-left: 25px"),
+    //        thead = table.append("thead"),
+    //        tbody = table.append("tbody");
+
+    //    // append the header row
+    //    thead.append("tr")
+    //        .selectAll("th")
+    //        .data(columns)
+    //        .enter()
+    //        .append("th")
+    //        .text(function (column) { return column; });
+
+    //    // create a row for each object in the data
+    //    var rows = tbody.selectAll("tr")
+    //        .data(data)
+    //        .enter()
+    //        .append("tr");
+
+    //    // create a cell in each row for each column
+    //    var cells = rows.selectAll("td")
+    //        .data(function (row) {
+    //            return columns.map(function (column) {
+    //                return { column: column, value: row[column] };
+    //            });
+    //        })
+    //        .enter()
+    //        .append("td")
+    //        .attr("style", "font-family: Courier")
+    //        .html(function (d) { return d.value; });
+
+    //    return table;
+    //}
+
+    //// render the table
+    //var peopleTable = tabulate(data, ["Wall", "Window", "HRV", "TEUI", "TEDI Whole", "TEDI Res", "GHGI"]);
+
+    var column_names = ["Wall", "Window", "HRV", "TEUI", "TEDI Whole", "TEDI Res", "GHGI"];
+    var clicks = { Wall: 0, views: 0, created_on: 0, url: 0 };
+
+    // draw the table
+    d3.select("body").append("div")
+        .attr("id", "container")
+
+    d3.select("#container").append("div")
+        .attr("id", "FilterableTable");
+
+    d3.select("#FilterableTable").append("h1")
+        .attr("id", "title")
+        .text("My Youtube Channels")
+
+    d3.select("#FilterableTable").append("div")
+        .attr("class", "SearchBar")
+        .append("p")
+        .attr("class", "SearchBar")
+        .text("Search By Title:");
+
+    d3.select(".SearchBar")
+        .append("input")
+        .attr("class", "SearchBar")
+        .attr("id", "search")
+        .attr("type", "text")
+        .attr("placeholder", "Search...");
+
+    var table = d3.select("#FilterableTable").append("table");
+    table.append("thead").append("tr");
+
+    var headers = table.select("tr").selectAll("th")
+        .data(column_names)
+        .enter()
+        .append("th")
+        .text(function (d) { return d; });
+
+    var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
+
+   
+
+        // draw table body with rows
+        table.append("tbody")
+
+        // data bind
+        rows = table.select("tbody").selectAll("tr")
+            .data(data, function (d) { return d.id; });
+
+        // enter the rows
+        rows.enter()
+            .append("tr")
+
+        // enter td's in each row
+        row_entries = rows.selectAll("td")
+            .data(function (d) {                
+                var arr = [];
+                for (var k in d) {
+                    if (d.hasOwnProperty(k)) {
+                        arr.push(d[k]);
+                    }
+                }                
+                return arr ;
+            })
+            .enter()
+            .append("td")
+
+        // draw row entries with no anchor 
+        row_entries_no_anchor = row_entries.filter(function (d) {
+            return (/https?:\/\//.test(d) == false)
+        })
+        row_entries_no_anchor.text(function (d) { return d; })
+
+        // draw row entries with anchor
+        row_entries_with_anchor = row_entries.filter(function (d) {
+            return (/https?:\/\//.test(d) == true)
+        })
+        row_entries_with_anchor
+            .append("a")
+            .attr("href", function (d) { return d; })
+            .attr("target", "_blank")
+            .text(function (d) { return d; })
+
+
+        /**  search functionality **/
+        d3.select("#search")
+            .on("keyup", function () { // filter according to key pressed 
+                var searched_data = data,
+                    text = this.value.trim();
+
+                var searchResults = searched_data.map(function (r) {
+                    var regex = new RegExp("^" + text + ".*", "i");
+                    if (regex.test(r.title)) { // if there are any results
+                        return regex.exec(r.title)[0]; // return them to searchResults
+                    }
+                })
+
+                // filter blank entries from searchResults
+                searchResults = searchResults.filter(function (r) {
+                    return r != undefined;
+                })
+
+                // filter dataset with searchResults
+                searched_data = searchResults.map(function (r) {
+                    return data.filter(function (p) {
+                        return p.title.indexOf(r) != -1;
+                    })
+                })
+
+                // flatten array 
+                searched_data = [].concat.apply([], searched_data)
+
+                // data bind with new data
+                rows = table.select("tbody").selectAll("tr")
+                    .data(searched_data, function (d) { return d.id; })
+
+                // enter the rows
+                rows.enter()
+                    .append("tr");
+
+                // enter td's in each row
+                row_entries = rows.selectAll("td")
+                    .data(function (d) {
+                        var arr = [];
+                        for (var k in d) {
+                            if (d.hasOwnProperty(k)) {
+                                arr.push(d[k]);
+                            }
+                        }
+                        return [arr[3], arr[1], arr[2], arr[0]];
+                    })
+                    .enter()
+                    .append("td")
+
+                // draw row entries with no anchor 
+                row_entries_no_anchor = row_entries.filter(function (d) {
+                    return (/https?:\/\//.test(d) == false)
+                })
+                row_entries_no_anchor.text(function (d) { return d; })
+
+                // draw row entries with anchor
+                row_entries_with_anchor = row_entries.filter(function (d) {
+                    return (/https?:\/\//.test(d) == true)
+                })
+                row_entries_with_anchor
+                    .append("a")
+                    .attr("href", function (d) { return d; })
+                    .attr("target", "_blank")
+                    .text(function (d) { return d; })
+
+                // exit
+                rows.exit().remove();
+            })
+
+        /**  sort functionality **/
+        headers
+            .on("click", function (d) {
+                console.log(column_names[]);
+                if (d == "Title") {
+                    
+                    clicks.title++;
+                    // even number of clicks
+                    if (clicks.title % 2 == 0) {
+                        // sort ascending: alphabetically
+                        rows.sort(function (a, b) {
+                            if (a.title.toUpperCase() < b.title.toUpperCase()) {
+                                return -1;
+                            } else if (a.title.toUpperCase() > b.title.toUpperCase()) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                        // odd number of clicks  
+                    } else if (clicks.title % 2 != 0) {
+                        // sort descending: alphabetically
+                        rows.sort(function (a, b) {
+                            if (a.title.toUpperCase() < b.title.toUpperCase()) {
+                                return 1;
+                            } else if (a.title.toUpperCase() > b.title.toUpperCase()) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                    }
+                }
+                if (d == "Views") {
+                    clicks.views++;
+                    // even number of clicks
+                    if (clicks.views % 2 == 0) {
+                        // sort ascending: numerically
+                        rows.sort(function (a, b) {
+                            if (+a.views < +b.views) {
+                                return -1;
+                            } else if (+a.views > +b.views) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                        // odd number of clicks  
+                    } else if (clicks.views % 2 != 0) {
+                        // sort descending: numerically
+                        rows.sort(function (a, b) {
+                            if (+a.views < +b.views) {
+                                return 1;
+                            } else if (+a.views > +b.views) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                    }
+                }
+                if (d == "Created On") {
+                    clicks.created_on++;
+                    if (clicks.created_on % 2 == 0) {
+                        // sort ascending: by date
+                        rows.sort(function (a, b) {
+                            // grep date and time, split them apart, make Date objects for comparing  
+                            var date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(a.created_on);
+                            date = date[0].split("-");
+                            var time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(a.created_on);
+                            time = time[0].split(":");
+                            var a_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
+
+                            date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(b.created_on);
+                            date = date[0].split("-");
+                            time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(b.created_on);
+                            time = time[0].split(":");
+                            var b_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
+
+                            if (a_date_obj < b_date_obj) {
+                                return -1;
+                            } else if (a_date_obj > b_date_obj) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                        // odd number of clicks  
+                    } else if (clicks.created_on % 2 != 0) {
+                        // sort descending: by date
+                        rows.sort(function (a, b) {
+                            // grep date and time, split them apart, make Date objects for comparing  
+                            var date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(a.created_on);
+                            date = date[0].split("-");
+                            var time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(a.created_on);
+                            time = time[0].split(":");
+                            var a_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
+
+                            date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(b.created_on);
+                            date = date[0].split("-");
+                            time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(b.created_on);
+                            time = time[0].split(":");
+                            var b_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
+
+                            if (a_date_obj < b_date_obj) {
+                                return 1;
+                            } else if (a_date_obj > b_date_obj) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                    }
+                }
+                if (d == "URL") {
+                    clicks.url++;
+                    // even number of clicks
+                    if (clicks.url % 2 == 0) {
+                        // sort ascending: alphabetically
+                        rows.sort(function (a, b) {
+                            if (a.thumb_url_default.toUpperCase() < b.thumb_url_default.toUpperCase()) {
+                                return -1;
+                            } else if (a.thumb_url_default.toUpperCase() > b.thumb_url_default.toUpperCase()) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                        // odd number of clicks  
+                    } else if (clicks.url % 2 != 0) {
+                        // sort descending: alphabetically
+                        rows.sort(function (a, b) {
+                            if (a.thumb_url_default.toUpperCase() < b.thumb_url_default.toUpperCase()) {
+                                return 1;
+                            } else if (a.thumb_url_default.toUpperCase() > b.thumb_url_default.toUpperCase()) {
+                                return -1;
+                            } else {
+                                return 0;
+                            }
+                        });
+                    }
+                }
+            }) // end of click listeners
+  
+
 
     // Render full foreground
     brush();
@@ -816,8 +1152,8 @@ window.onresize = function () {
     // update axis placement
     axis = axis.ticks(1 + height / 50),
         d3.selectAll(".axis")
-            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
-
+            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });  
+   
     // render data
     brush();
 };
@@ -896,3 +1232,4 @@ function search(selection, str) {
     pattern = new RegExp(str, "i")
     return _(selection).filter(function (d) { return pattern.exec(d.name); });
 }
+

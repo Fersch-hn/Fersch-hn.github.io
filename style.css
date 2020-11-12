@@ -18,6 +18,10 @@ body {
         color: #e3e3e3;
     }
 
+td, th {
+    padding: 1px 4px;
+}
+
 a {
     text-decoration: none;
 }
