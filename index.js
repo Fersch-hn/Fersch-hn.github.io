@@ -179,7 +179,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
         else {                   
             return (true) && (yscale[k] = d3.scale.ordinal()
                 .domain(data.map(function (d) { return d[k]; }))
-                .range([h, 0]));
+                .rangePoints([h, 0]));
         }        
     }));     
     
@@ -259,7 +259,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
     g.append("svg:g")
         .attr("class", "axis")       
         .attr("transform", "translate(0,0)")
-        .each(function (d) {                 
+        .each(function (d) {             
             d3.select(this).call(axis.scale(yscale[d]));
         })      
         .append("svg:text")
@@ -312,7 +312,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
             if (firstTarget === 2) { return "Target: " }
         });
 
-    var firstTarget2 = 1;
+    var firstOutput = 1;
     g.append("line")
         .attr("x1", -65)
         .attr("y1", -80)
@@ -320,8 +320,8 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
         .attr("y2", 130)
         .style("stroke", function (d) {
             let obj = magnitudes.find(m => m.name === d);
-            if (!(obj.target === null)) { firstTarget2++ }
-            if (firstTarget2 === 2) { return "grey"; }
+            if (!(obj.io === "Input")) { firstOutput++ }
+            if (firstOutput === 2) { return "grey"; }            
         })
         .style("fill", "red")
         .style("stroke-width", 4);
