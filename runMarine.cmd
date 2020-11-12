@@ -1,1 +1,1 @@
-http-server ".\csv\622SWMarineParametricsCSV.csv"
+http-server ".\csv\622SWMarineParametricsCSV.csv" --cors

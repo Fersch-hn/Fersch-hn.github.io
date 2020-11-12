@@ -1,1 +1,1 @@
-http-server ".\csv\Parc Results.csv"
+http-server ".\csv\Parc Results.csv" --cors
