@@ -345,8 +345,9 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
     legend = create_legend(colors, brush);
     
     //Table
-    var column_names = ["Wall", "Window", "HRV", "TEUI", "TEDI Whole", "TEDI Res", "GHGI"];
-    var clicks = { "Wall": 0, "Window": 0, "HRV": 0, "TEUI": 0, "TEDI Whole": 0, "TEDI Res": 0, "GHGI": 0 };
+    var column_names = Object.keys(data[0]);
+    var clicks = { };
+    column_names.map(function (a) { clicks[a] = 0; });  
 
     // draw the table
     d3.select("#table").append("div")
