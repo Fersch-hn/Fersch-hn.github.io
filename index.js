@@ -2,6 +2,25 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+// handle upload button
+function upload_button(el, callback) {
+    var uploader = document.getElementById(el);
+    var reader = new FileReader();
+
+    reader.onload = function (e) {
+        var contents = e.target.result;
+        callback(contents);
+    };
+
+    uploader.addEventListener("change", handleFiles, false);
+
+    function handleFiles() {       
+        var file = this.files[0];
+        reader.readAsText(file);
+    };
+};
+           
+
 
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight - 540, 240]);
@@ -68,7 +87,9 @@ var svg = d3.select("svg")
     .attr("style", "outline: thin solid black;");    
 
 // Load the data and visualization
-d3.csv(" http://127.0.0.1:8080", function (raw_data) {
+function load_dataset(fileData) {
+    var raw_data = d3.csv.parse(fileData);
+
     // Convert quantitative scales to floats
     data = raw_data.map(function (d) {
         for (var k in d) {
@@ -358,7 +379,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
 
     d3.select("#FilterableTable").append("h1")
         .attr("id", "title")
-        .text("My Youtube Channels")
+        .text("My Data")
 
     d3.select("#FilterableTable").append("div")
         .attr("class", "SearchBar")
@@ -565,7 +586,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
     // Render full foreground
     brush();
 
-});
+};
 
 // copy one canvas to another, grayscale
 function gray_copy(source, target) {

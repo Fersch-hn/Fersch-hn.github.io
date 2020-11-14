@@ -7,7 +7,7 @@
 </head>
 <body>
     <div id="header">
-        <h1>Nutrient Explorer</h1>
+        <h1>My Data Viz</h1>
         <button title="Zoom in on selected data" id="keep-data" disabled="disabled">Keep</button>
         <button title="Remove selected data" id="exclude-data" disabled="disabled">Exclude</button>
         <button title="Export data as CSV" id="export-data">Export</button>
@@ -24,13 +24,16 @@
         </div>
         <div style="clear:both;"></div>
     </div>
-
+    <input type="file" id="uploader">
     <div id="chart">
         <canvas id="background"></canvas>
         <canvas id="foreground"></canvas>
         <canvas id="highlight"></canvas>
         <svg></svg>
     </div>
+    
+
+
 
     <!--<div id="wrap">
         <div class="third" id="controls">
@@ -78,8 +81,8 @@
         </div>
         <div class="third">
             <small>-->
-                <!--Last rendered <strong id="render-speed"></strong> lines-->
-            <!--</small>
+    <!--Last rendered <strong id="render-speed"></strong> lines-->
+    <!--</small>
             <h3>Food Groups</h3>
             <p id="legend">
             </p>
@@ -97,4 +100,7 @@
 <script src="https://mbostock.github.com/d3/d3.v2.js"></script>
 <script src="http://underscorejs.org/underscore.js"></script>
 <script src="index.js"></script>
+<script>
+    upload_button("uploader", load_dataset);
+</script>
 </html>
