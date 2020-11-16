@@ -14,9 +14,18 @@ function upload_button(el, callback) {
 
     uploader.addEventListener("change", handleFiles, false);
 
-    function handleFiles() {       
+    function handleFiles() {
+        //Validate CSV
+        var fileName = uploader.files[0].name;
+        if (!(/\.(csv)$/i).test(fileName)) {
+            document.getElementById('error').innerHTML = "Please Upload a CSV";
+            return;
+        }
+
+        document.getElementById('error').innerHTML = "";      
+
         var file = this.files[0];
-        reader.readAsText(file);
+        reader.readAsText(file);       
     };
 };
            
