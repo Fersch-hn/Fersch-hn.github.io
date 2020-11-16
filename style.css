@@ -35,7 +35,7 @@ a {
 }
 
 svg {
-    font-family: Ubuntu, Tahoma, Helvetica, sans-serif;
+    font-family: Ubuntu, Tahoma, Helvetica, sans-serif;    
 }
 
 canvas, svg {
@@ -46,6 +46,7 @@ canvas, svg {
 
 #chart {
     position: relative;
+    margin-bottom: 50px;
 }
 
 .brush rect.extent {
@@ -298,4 +299,13 @@ button#exclude-data {
 
 .dark ::-webkit-scrollbar-thumb {
     background: #444;
+}
+
+#table {
+    text-align: center;
+}
+
+
+table {    
+    margin: 0 auto;
 }

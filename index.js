@@ -32,9 +32,9 @@ function upload_button(el, callback) {
 
 
 var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight - 540, 240]);
+    height = d3.max([document.body.clientHeight - 450, 240]);
 
-var m = [100, 0, 10, 0],
+var m = [110, 0, 20, 0],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
@@ -93,7 +93,8 @@ var svg = d3.select("svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
     //Border SVG
-    .attr("style", "outline: thin solid black;");    
+    .attr("style", "outline: thin solid black; outline-offset: 5px;")
+    
 
 // Load the data and visualization
 function load_dataset(fileData) {
