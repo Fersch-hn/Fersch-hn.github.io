@@ -2,11 +2,39 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+// handle upload button
+function upload_button(el, callback) {
+    var uploader = document.getElementById(el);
+    var reader = new FileReader();
+
+    reader.onload = function (e) {
+        var contents = e.target.result;
+        callback(contents);
+    };
+
+    uploader.addEventListener("change", handleFiles, false);
+
+    function handleFiles() {
+        //Validate CSV
+        var fileName = uploader.files[0].name;
+        if (!(/\.(csv)$/i).test(fileName)) {
+            document.getElementById('error').innerHTML = "Please Upload a CSV";
+            return;
+        }
+
+        document.getElementById('error').innerHTML = "";      
+
+        var file = this.files[0];
+        reader.readAsText(file);       
+    };
+};
+           
+
 
 var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight - 540, 240]);
+    height = d3.max([document.body.clientHeight - 450, 240]);
 
-var m = [100, 0, 10, 0],
+var m = [110, 0, 20, 0],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
@@ -65,10 +93,13 @@ var svg = d3.select("svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
     //Border SVG
-    .attr("style", "outline: thin solid black;");    
+    .attr("style", "outline: thin solid black; outline-offset: 5px;")
+    
 
 // Load the data and visualization
-d3.csv(" http://127.0.0.1:8080", function (raw_data) {
+function load_dataset(fileData) {
+    var raw_data = d3.csv.parse(fileData);
+
     // Convert quantitative scales to floats
     data = raw_data.map(function (d) {
         for (var k in d) {
@@ -179,7 +210,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
         else {                   
             return (true) && (yscale[k] = d3.scale.ordinal()
                 .domain(data.map(function (d) { return d[k]; }))
-                .range([h, 0]));
+                .rangePoints([h, 0]));
         }        
     }));     
     
@@ -259,7 +290,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
     g.append("svg:g")
         .attr("class", "axis")       
         .attr("transform", "translate(0,0)")
-        .each(function (d) {                 
+        .each(function (d) {             
             d3.select(this).call(axis.scale(yscale[d]));
         })      
         .append("svg:text")
@@ -312,7 +343,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
             if (firstTarget === 2) { return "Target: " }
         });
 
-    var firstTarget2 = 1;
+    var firstOutput = 1;
     g.append("line")
         .attr("x1", -65)
         .attr("y1", -80)
@@ -320,8 +351,8 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
         .attr("y2", 130)
         .style("stroke", function (d) {
             let obj = magnitudes.find(m => m.name === d);
-            if (!(obj.target === null)) { firstTarget2++ }
-            if (firstTarget2 === 2) { return "grey"; }
+            if (!(obj.io === "Input")) { firstOutput++ }
+            if (firstOutput === 2) { return "grey"; }            
         })
         .style("fill", "red")
         .style("stroke-width", 4);
@@ -343,50 +374,14 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
 
 
     legend = create_legend(colors, brush);
-
-    //function tabulate(data, columns) {
-    //    var table = d3.select("#table").append("table")
-    //        .attr("style", "margin-left: 25px"),
-    //        thead = table.append("thead"),
-    //        tbody = table.append("tbody");
-
-    //    // append the header row
-    //    thead.append("tr")
-    //        .selectAll("th")
-    //        .data(columns)
-    //        .enter()
-    //        .append("th")
-    //        .text(function (column) { return column; });
-
-    //    // create a row for each object in the data
-    //    var rows = tbody.selectAll("tr")
-    //        .data(data)
-    //        .enter()
-    //        .append("tr");
-
-    //    // create a cell in each row for each column
-    //    var cells = rows.selectAll("td")
-    //        .data(function (row) {
-    //            return columns.map(function (column) {
-    //                return { column: column, value: row[column] };
-    //            });
-    //        })
-    //        .enter()
-    //        .append("td")
-    //        .attr("style", "font-family: Courier")
-    //        .html(function (d) { return d.value; });
-
-    //    return table;
-    //}
-
-    //// render the table
-    //var peopleTable = tabulate(data, ["Wall", "Window", "HRV", "TEUI", "TEDI Whole", "TEDI Res", "GHGI"]);
-
-    var column_names = ["Wall", "Window", "HRV", "TEUI", "TEDI Whole", "TEDI Res", "GHGI"];
-    var clicks = { Wall: 0, views: 0, created_on: 0, url: 0 };
+    
+    //Table
+    var column_names = Object.keys(data[0]);
+    var clicks = { };
+    column_names.map(function (a) { clicks[a] = 0; });  
 
     // draw the table
-    d3.select("body").append("div")
+    d3.select("#table").append("div")
         .attr("id", "container")
 
     d3.select("#container").append("div")
@@ -394,7 +389,7 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
 
     d3.select("#FilterableTable").append("h1")
         .attr("id", "title")
-        .text("My Youtube Channels")
+        .text("My Data")
 
     d3.select("#FilterableTable").append("div")
         .attr("class", "SearchBar")
@@ -534,156 +529,74 @@ d3.csv(" http://127.0.0.1:8080", function (raw_data) {
                 rows.exit().remove();
             })
 
-        /**  sort functionality **/
-        headers
-            .on("click", function (d) {
-                console.log(column_names[]);
-                if (d == "Title") {
+    /**  sort functionality **/
+    headers
+        .on("click", function (d) {           
+            if (!(_.isNumber(data[0][d]))) {
+                clicks[d]++;
+                if (clicks[d] % 2 == 0) {
+                    // sort ascending: alphabetically
+                    rows.sort(
+                        function (a, b) {
+                            if (a[d].toUpperCase() < b[d].toUpperCase()) {
+                                return -1;
+                            }
+                            else if (a[d].toUpperCase() > b[d].toUpperCase()) {
+                                return 1;
+                            }
+                            else {
+                                return 0;
+                            }
+                        });
+                }
+                else if (clicks[d] % 2 != 0) {
+                    // sort descending: alphabetically
+                    rows.sort(function (a, b) {
+                        if (a[d].toUpperCase() < b[d].toUpperCase()) {
+                            return 1;
+                        } else if (a[d].toUpperCase() > b[d].toUpperCase()) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    });
+                }
+            }
+            else {
+                clicks[d]++;
+                if (clicks[d] % 2 == 0) {
+                    rows.sort(function (a, b) {
+                        if (+a[d] < +b[d]) {
+                            return -1;
+                        } else if (+a[d] > +b[d]) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
+                    });
+                }
+                else if (clicks[d] % 2 != 0) {
+                    // sort descending: numerically
+                    rows.sort(function (a, b) {
+                        if (+a[d] < +b[d]) {
+                            return 1;
+                        } else if (+a[d] > +b[d]) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    });
+                }
+            }
+
+        });
+        
                     
-                    clicks.title++;
-                    // even number of clicks
-                    if (clicks.title % 2 == 0) {
-                        // sort ascending: alphabetically
-                        rows.sort(function (a, b) {
-                            if (a.title.toUpperCase() < b.title.toUpperCase()) {
-                                return -1;
-                            } else if (a.title.toUpperCase() > b.title.toUpperCase()) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                        // odd number of clicks  
-                    } else if (clicks.title % 2 != 0) {
-                        // sort descending: alphabetically
-                        rows.sort(function (a, b) {
-                            if (a.title.toUpperCase() < b.title.toUpperCase()) {
-                                return 1;
-                            } else if (a.title.toUpperCase() > b.title.toUpperCase()) {
-                                return -1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                    }
-                }
-                if (d == "Views") {
-                    clicks.views++;
-                    // even number of clicks
-                    if (clicks.views % 2 == 0) {
-                        // sort ascending: numerically
-                        rows.sort(function (a, b) {
-                            if (+a.views < +b.views) {
-                                return -1;
-                            } else if (+a.views > +b.views) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                        // odd number of clicks  
-                    } else if (clicks.views % 2 != 0) {
-                        // sort descending: numerically
-                        rows.sort(function (a, b) {
-                            if (+a.views < +b.views) {
-                                return 1;
-                            } else if (+a.views > +b.views) {
-                                return -1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                    }
-                }
-                if (d == "Created On") {
-                    clicks.created_on++;
-                    if (clicks.created_on % 2 == 0) {
-                        // sort ascending: by date
-                        rows.sort(function (a, b) {
-                            // grep date and time, split them apart, make Date objects for comparing  
-                            var date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(a.created_on);
-                            date = date[0].split("-");
-                            var time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(a.created_on);
-                            time = time[0].split(":");
-                            var a_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
-
-                            date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(b.created_on);
-                            date = date[0].split("-");
-                            time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(b.created_on);
-                            time = time[0].split(":");
-                            var b_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
-
-                            if (a_date_obj < b_date_obj) {
-                                return -1;
-                            } else if (a_date_obj > b_date_obj) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                        // odd number of clicks  
-                    } else if (clicks.created_on % 2 != 0) {
-                        // sort descending: by date
-                        rows.sort(function (a, b) {
-                            // grep date and time, split them apart, make Date objects for comparing  
-                            var date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(a.created_on);
-                            date = date[0].split("-");
-                            var time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(a.created_on);
-                            time = time[0].split(":");
-                            var a_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
-
-                            date = /[\d]{4}-[\d]{2}-[\d]{2}/.exec(b.created_on);
-                            date = date[0].split("-");
-                            time = /[\d]{2}:[\d]{2}:[\d]{2}/.exec(b.created_on);
-                            time = time[0].split(":");
-                            var b_date_obj = new Date(+date[0], (+date[1] - 1), +date[2], +time[0], +time[1], +time[2]);
-
-                            if (a_date_obj < b_date_obj) {
-                                return 1;
-                            } else if (a_date_obj > b_date_obj) {
-                                return -1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                    }
-                }
-                if (d == "URL") {
-                    clicks.url++;
-                    // even number of clicks
-                    if (clicks.url % 2 == 0) {
-                        // sort ascending: alphabetically
-                        rows.sort(function (a, b) {
-                            if (a.thumb_url_default.toUpperCase() < b.thumb_url_default.toUpperCase()) {
-                                return -1;
-                            } else if (a.thumb_url_default.toUpperCase() > b.thumb_url_default.toUpperCase()) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                        // odd number of clicks  
-                    } else if (clicks.url % 2 != 0) {
-                        // sort descending: alphabetically
-                        rows.sort(function (a, b) {
-                            if (a.thumb_url_default.toUpperCase() < b.thumb_url_default.toUpperCase()) {
-                                return 1;
-                            } else if (a.thumb_url_default.toUpperCase() > b.thumb_url_default.toUpperCase()) {
-                                return -1;
-                            } else {
-                                return 0;
-                            }
-                        });
-                    }
-                }
-            }) // end of click listeners
-  
-
 
     // Render full foreground
     brush();
 
-});
+};
 
 // copy one canvas to another, grayscale
 function gray_copy(source, target) {
