@@ -2,6 +2,34 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+var width = document.body.clientWidth,
+    height = d3.max([document.body.clientHeight - 450, 240]);
+
+var m = [110, 50, 20, 50],
+    w = width - m[1] - m[3],
+    h = height - m[0] - m[2],
+    xscale = d3.scale.ordinal(),
+    xscaleIO = d3.scale.linear().range([0, w]),
+    yscale = {},
+    dragging = {},
+    line = d3.svg.line(),
+    //this can control amount of ticks
+    axis = d3.svg.axis().orient("left").ticks(1 + height / 50),
+    data,
+    foreground,
+    background,
+    highlighted,
+    dimensions,
+    dimensionsIO = [],
+    legend,
+    render_speed = 50,
+    brush_count = 0,
+    excluded_groups = [];
+
+var colors = {
+    "test": [185, 56, 73]
+};
+
 // handle upload button
 function upload_button(el, callback) {
     var uploader = document.getElementById(el);
@@ -31,33 +59,7 @@ function upload_button(el, callback) {
            
 
 
-var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight - 450, 240]);
 
-var m = [110, 0, 20, 0],
-    w = width - m[1] - m[3],
-    h = height - m[0] - m[2],
-    xscale = d3.scale.ordinal().rangePoints([0, w], 1),
-    xscaleIO = d3.scale.ordinal().rangePoints([0, w], 1),
-    yscale = {},
-    dragging = {},
-    line = d3.svg.line(),
-    //this can control amount of ticks
-    axis = d3.svg.axis().orient("left").ticks(1 + height / 50),
-    data,
-    foreground,
-    background,
-    highlighted,
-    dimensions,
-    dimensionsIO,
-    legend,
-    render_speed = 50,
-    brush_count = 0,
-    excluded_groups = [];
-
-var colors = {
-    "test": [185, 56, 73]   
-};
 
 // Scale chart and canvas height
 d3.select("#chart")
@@ -179,47 +181,73 @@ function load_dataset(fileData) {
 
     var groupedData = [];
     groupedData.push({ key: "Input", values: inputs });
-    groupedData.push({ key: "Output", values: outputs });     
+    groupedData.push({ key: "Output", values: outputs });    
   
-    var dimensionsIO = [];
+   
     var cummulative = 0;
-    groupedData.forEach(function (val, i) {
+
+    var columnData = [{ key: "Input", values: ["Wall", "Window", "HRV"] },
+        { key: "Output", values: ["TEUI", "TEDI Whole", "TEDI Res", "GHGI"] }]
+
+
+    columnData.forEach(function (val, i) {       
         val.cummulative = cummulative;
         cummulative += val.values.length;
         val.values.forEach(function (values) {
             values.parentKey = val.key;
             dimensionsIO.push(i);
         })
-    }); 
+    });   
 
-    //Scale for Inputs/Outputs
-    xscaleIO.domain(dimensionsIO = d3.keys(groupedData).filter(function (k) {     
-        return (true) && (yscale[k] = d3.scale.ordinal()
-            .domain(groupedData.map(function (d) { return d[k]; }))
-                .range([h, 0]));
-        }        
-    )); 
-
-    //Scale for the rest of the data
-    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {       
+    dimensions = d3.keys(data[0]).filter(function (k) {
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scale.linear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
                 .range([h, 0]));
         }
-        else {                   
+        else {
             return (true) && (yscale[k] = d3.scale.ordinal()
                 .domain(data.map(function (d) { return d[k]; }))
                 .rangePoints([h, 0]));
-        }        
-    }));     
-    
+        }
+    });     
+
+    xscale.domain(dimensions).rangeBands([0, w]);
+    var domain = xscale.rangeBand() * dimensionsIO.length;
+    xscaleIO.domain([0, domain]);
+
+    var temp = [{key: "Input", values: ["Wall", "Window", "HRV"]},
+        { key: "Output", values: ["TEUI","TEDI Whole", "TEDI Res", "GHGI"] }];
+
+    // Add a group element for each input output.   
+    var g = svg.selectAll(".dimensionIO")
+        .data(columnData)
+        .enter().append("svg:g")
+        .attr("class", "dimensionIO")
+        .attr("transform", function (d) { console.log(d); return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
+
+        g.append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'axis-label')
+        .attr('y', -80)
+        .attr('x', 0)
+        .text(function (d) {
+
+            return d.key;
+        });  
+  
+    var c = -1;
     // Add a group element for each dimension.
-    var g = svg.selectAll(".dimension")
-        .data(dimensions)
+    var subGroup = g.selectAll(".dimension")
+        .data(function (d) {
+            return d.values;
+        })
         .enter().append("svg:g")
         .attr("class", "dimension")
-        .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
+        .attr("transform", function (d, i) {
+            console.log(d, 1);
+            return "translate(" + xscaleIO((i * xscale.rangeBand())) + ",0)";
+        })
         .call(d3.behavior.drag()
             .on("dragstart", function (d) {
                 dragging[d] = this.__origin__ = xscale(d);
@@ -270,27 +298,13 @@ function load_dataset(fileData) {
                 delete dragging[d];
             }))
 
-    // Add a group element for each input output.   
-    svg.selectAll(".dimensionIO")
-        .data(dimensionsIO)
-        .enter().append("svg:g")
-        .attr("class", "dimensionIO")
-        .attr("transform", function (d) { return "translate( " + xscaleIO(d) + " )"; })
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
-        .attr('y', -80)
-        .attr('x', 0)
-        .text(function (d) {
-            let obj = groupedData[d];         
-            return obj.key;
-        });  
+    
 
     // Add an axis and title.
-    g.append("svg:g")
+    subGroup.append("svg:g")
         .attr("class", "axis")       
         .attr("transform", "translate(0,0)")
-        .each(function (d) {             
+        .each(function (d) {           
             d3.select(this).call(axis.scale(yscale[d]));
         })      
         .append("svg:text")
@@ -306,7 +320,7 @@ function load_dataset(fileData) {
 
     //Add Extra Labels
     //Measure Magnitudes
-    g.append("svg:g")
+    subGroup.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
@@ -318,7 +332,7 @@ function load_dataset(fileData) {
         })
         
     //Target    
-    g.append("svg:g")
+    subGroup.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
@@ -331,7 +345,7 @@ function load_dataset(fileData) {
         });
    
     var firstTarget = 1;    
-    g.append("svg:g")
+    subGroup.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
@@ -344,7 +358,7 @@ function load_dataset(fileData) {
         });
 
     var firstOutput = 1;
-    g.append("line")
+    subGroup.append("line")
         .attr("x1", -65)
         .attr("y1", -80)
         .attr("x2", -65)
@@ -358,7 +372,7 @@ function load_dataset(fileData) {
         .style("stroke-width", 4);
 
     // Add and store a brush for each axis.
-    g.append("svg:g")
+    subGroup.append("svg:g")
         .attr("class", "brush")    
         .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
         .selectAll("rect")
@@ -368,7 +382,7 @@ function load_dataset(fileData) {
         .append("title")
         .text("Drag up or down to brush along this axis");
 
-    g.selectAll(".extent")
+    subGroup.selectAll(".extent")
         .append("title")
         .text("Drag or resize this filter");
 
@@ -389,20 +403,7 @@ function load_dataset(fileData) {
 
     d3.select("#FilterableTable").append("h1")
         .attr("id", "title")
-        .text("My Data")
-
-    d3.select("#FilterableTable").append("div")
-        .attr("class", "SearchBar")
-        .append("p")
-        .attr("class", "SearchBar")
-        .text("Search By Title:");
-
-    d3.select(".SearchBar")
-        .append("input")
-        .attr("class", "SearchBar")
-        .attr("id", "search")
-        .attr("type", "text")
-        .attr("placeholder", "Search...");
+        .text("My Data")      
 
     var table = d3.select("#FilterableTable").append("table");
     table.append("thead").append("tr");
@@ -456,78 +457,7 @@ function load_dataset(fileData) {
             .append("a")
             .attr("href", function (d) { return d; })
             .attr("target", "_blank")
-            .text(function (d) { return d; })
-
-
-        /**  search functionality **/
-        d3.select("#search")
-            .on("keyup", function () { // filter according to key pressed 
-                var searched_data = data,
-                    text = this.value.trim();
-
-                var searchResults = searched_data.map(function (r) {
-                    var regex = new RegExp("^" + text + ".*", "i");
-                    if (regex.test(r.title)) { // if there are any results
-                        return regex.exec(r.title)[0]; // return them to searchResults
-                    }
-                })
-
-                // filter blank entries from searchResults
-                searchResults = searchResults.filter(function (r) {
-                    return r != undefined;
-                })
-
-                // filter dataset with searchResults
-                searched_data = searchResults.map(function (r) {
-                    return data.filter(function (p) {
-                        return p.title.indexOf(r) != -1;
-                    })
-                })
-
-                // flatten array 
-                searched_data = [].concat.apply([], searched_data)
-
-                // data bind with new data
-                rows = table.select("tbody").selectAll("tr")
-                    .data(searched_data, function (d) { return d.id; })
-
-                // enter the rows
-                rows.enter()
-                    .append("tr");
-
-                // enter td's in each row
-                row_entries = rows.selectAll("td")
-                    .data(function (d) {
-                        var arr = [];
-                        for (var k in d) {
-                            if (d.hasOwnProperty(k)) {
-                                arr.push(d[k]);
-                            }
-                        }
-                        return [arr[3], arr[1], arr[2], arr[0]];
-                    })
-                    .enter()
-                    .append("td")
-
-                // draw row entries with no anchor 
-                row_entries_no_anchor = row_entries.filter(function (d) {
-                    return (/https?:\/\//.test(d) == false)
-                })
-                row_entries_no_anchor.text(function (d) { return d; })
-
-                // draw row entries with anchor
-                row_entries_with_anchor = row_entries.filter(function (d) {
-                    return (/https?:\/\//.test(d) == true)
-                })
-                row_entries_with_anchor
-                    .append("a")
-                    .attr("href", function (d) { return d; })
-                    .attr("target", "_blank")
-                    .text(function (d) { return d; })
-
-                // exit
-                rows.exit().remove();
-            })
+            .text(function (d) { return d; })        
 
     /**  sort functionality **/
     headers
@@ -804,6 +734,7 @@ function position(d) {
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
 function brush() {
+  
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
         extents = actives.map(function (p) { return yscale[p].brush.extent(); });
@@ -852,21 +783,7 @@ function brush() {
             return actives.every(function (p, dimension) {
                 return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1];
             }) ? selected.push(d) : null;
-        });
-
-    // free text search
-    var query = d3.select("#search")[0][0].value;
-    if (query.length > 0) {
-        selected = search(selected, query);
-    }
-
-    if (selected.length < data.length && selected.length > 0) {
-        d3.select("#keep-data").attr("disabled", null);
-        d3.select("#exclude-data").attr("disabled", null);
-    } else {
-        d3.select("#keep-data").attr("disabled", "disabled");
-        d3.select("#exclude-data").attr("disabled", "disabled");
-    };
+        }); 
 
     // total by food group
     var tallies = _(selected)
@@ -1050,13 +967,38 @@ window.onresize = function () {
         .select("g")
         .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-    xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
+    //xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
+    //dimensions.forEach(function (d) {
+    //    yscale[d].range([h, 0]);
+    //});
+
+  
+
+    var xscaleIO = d3.scale.linear().range([0, w]);
+    var xscale = d3.scale.ordinal();
+
+    //console.log(dimensions);
+    //xscale.domain(dimensions).rangeBands([0, w]);   
+    //var domain = xscale.rangeBand() * dimensionsIO.length;
+    //xscaleIO.domain([0, domain]);
+
+
+    xscale.domain(dimensions).rangeBands([0, w]);
+    var domain = xscale.rangeBand() * dimensionsIO.length;
+    xscaleIO.domain([0, domain]);
+    //xscale.domain(dimensions).rangeBands([0, w]);
+    //var domain = xscale.rangeBand() * dimensionsIO.length;
+    //xscaleIO.domain([0, domain]);
+
     dimensions.forEach(function (d) {
         yscale[d].range([h, 0]);
     });
+   
+    var g = d3.selectAll(".dimensionIO")
+        .attr("transform", function (d) { console.log(d); return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
 
-    d3.selectAll(".dimension")
-        .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
+    g.selectAll(".dimension")
+        .attr("transform", function (d, i) { console.log(d, i); return "translate(" + xscaleIO((i * xscale.rangeBand())) + ", 0)"; })
     // update brush placement
     d3.selectAll(".brush")
         .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
