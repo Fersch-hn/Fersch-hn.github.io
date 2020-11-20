@@ -151,42 +151,26 @@ function load_dataset(fileData) {
         newData.push(newrow);
     }
 
-    data = newData;     
-
-    //Group Data for Inputs/Outputs
+    data = newData;  
+    
+    //Group for Inputs and Outputs
+    var columnKeys = Object.keys(data[0]);
+   
     var inputs = [];
     var outputs = [];
-    data.map(function (d) {              
-        var newInput = {};
-        var newOutput = {};
+    columnKeys.map(function (d) {      
+        let obj = magnitudes.find(m => m.name === d);
 
-        Object.keys(d).map(function (n, i) {          
-
-            let obj = magnitudes.find(m => m.name === n);         
-
-            if (obj.io === "Input") {
-                newInput[n] = d[n];
-            }
-            else if (obj.io === "Output") {
-                newOutput[n] = d[n];
-            }
-        });
-        inputs.push(newInput);
-        outputs.push(newOutput);           
+        if (obj.io === "Input") inputs.push(d);        
+        else if (obj.io === "Output") outputs.push(d);
     });
 
-    var groupedData = [];
-    groupedData.push({ key: "Input", values: inputs });
-    groupedData.push({ key: "Output", values: outputs });    
-  
-   
+    var groupedColumns = [{ key: "Input", values: inputs },
+        { key: "Output", values: outputs }];  
+
+    //Get Cummulative and Lengths
     var cummulative = 0;
-
-    var columnData = [{ key: "Input", values: ["Wall", "Window", "HRV"] },
-        { key: "Output", values: ["TEUI", "TEDI Whole", "TEDI Res", "GHGI"] }]
-
-
-    columnData.forEach(function (val, i) {       
+    groupedColumns.forEach(function (val, i) {       
         val.cummulative = cummulative;
         cummulative += val.values.length;
         val.values.forEach(function (values) {
@@ -216,7 +200,7 @@ function load_dataset(fileData) {
     // Dont forget grouping IO
     // Add a group element for each input output.   
     var g = svg.selectAll(".dimensionIO")
-        .data(columnData)
+        .data(groupedColumns)
         .enter().append("svg:g")
         .attr("class", "dimensionIO")
         .attr("transform", function (d) { return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
