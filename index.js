@@ -55,11 +55,7 @@ function upload_button(el, callback) {
         var file = this.files[0];
         reader.readAsText(file);       
     };
-};
-           
-
-
-
+};         
 
 // Scale chart and canvas height
 d3.select("#chart")
@@ -164,7 +160,7 @@ function load_dataset(fileData) {
         var newInput = {};
         var newOutput = {};
 
-        var result = Object.keys(d).map(function (n, i) {          
+        Object.keys(d).map(function (n, i) {          
 
             let obj = magnitudes.find(m => m.name === n);         
 
@@ -199,6 +195,7 @@ function load_dataset(fileData) {
         })
     });   
 
+    //Yscales for each column
     dimensions = d3.keys(data[0]).filter(function (k) {
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scale.linear()
@@ -214,29 +211,23 @@ function load_dataset(fileData) {
 
     xscale.domain(dimensions).rangeBands([0, w]);
     var domain = xscale.rangeBand() * dimensionsIO.length;
-    xscaleIO.domain([0, domain]);
+    xscaleIO.domain([0, domain]);    
 
-    var temp = [{key: "Input", values: ["Wall", "Window", "HRV"]},
-        { key: "Output", values: ["TEUI","TEDI Whole", "TEDI Res", "GHGI"] }];
-
+    // Dont forget grouping IO
     // Add a group element for each input output.   
     var g = svg.selectAll(".dimensionIO")
         .data(columnData)
         .enter().append("svg:g")
         .attr("class", "dimensionIO")
-        .attr("transform", function (d) { console.log(d); return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
+        .attr("transform", function (d) { return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
 
         g.append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
         .attr('y', -80)
         .attr('x', 0)
-        .text(function (d) {
-
-            return d.key;
-        });  
-  
-    var c = -1;
+        .text(function (d) { return d.key; });    
+   
     // Add a group element for each dimension.
     var subGroup = g.selectAll(".dimension")
         .data(function (d) {
@@ -244,8 +235,7 @@ function load_dataset(fileData) {
         })
         .enter().append("svg:g")
         .attr("class", "dimension")
-        .attr("transform", function (d, i) {
-            console.log(d, 1);
+        .attr("transform", function (d, i) {           
             return "translate(" + xscaleIO((i * xscale.rangeBand())) + ",0)";
         })
         .call(d3.behavior.drag()
@@ -967,38 +957,29 @@ window.onresize = function () {
         .select("g")
         .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-    //xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
-    //dimensions.forEach(function (d) {
-    //    yscale[d].range([h, 0]);
-    //});
-
-  
-
-    var xscaleIO = d3.scale.linear().range([0, w]);
-    var xscale = d3.scale.ordinal();
-
-    //console.log(dimensions);
-    //xscale.domain(dimensions).rangeBands([0, w]);   
-    //var domain = xscale.rangeBand() * dimensionsIO.length;
-    //xscaleIO.domain([0, domain]);
-
+    //Scale Again
+    xscaleIO = d3.scale.linear().range([0, w]);
+    xscale = d3.scale.ordinal();    
 
     xscale.domain(dimensions).rangeBands([0, w]);
-    var domain = xscale.rangeBand() * dimensionsIO.length;
+    domain = xscale.rangeBand() * dimensionsIO.length;
     xscaleIO.domain([0, domain]);
-    //xscale.domain(dimensions).rangeBands([0, w]);
-    //var domain = xscale.rangeBand() * dimensionsIO.length;
-    //xscaleIO.domain([0, domain]);
-
+  
     dimensions.forEach(function (d) {
         yscale[d].range([h, 0]);
     });
-   
+
+    //Update Axis Position
     var g = d3.selectAll(".dimensionIO")
-        .attr("transform", function (d) { console.log(d); return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
+        .attr("transform", function (d) {
+            return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)";
+        });
 
     g.selectAll(".dimension")
-        .attr("transform", function (d, i) { console.log(d, i); return "translate(" + xscaleIO((i * xscale.rangeBand())) + ", 0)"; })
+        .attr("transform", function (d, i) {
+            return "translate(" + xscaleIO((i * xscale.rangeBand())) + ", 0)";
+        });
+
     // update brush placement
     d3.selectAll(".brush")
         .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
