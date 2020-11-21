@@ -124,10 +124,10 @@ function load_dataset(fileData) {
             magnitudeObject.name = res[0];
         }
         if (res.length > 1) {
-            magnitudeObject.value = res[1];
+            magnitudeObject.io = res[1];
         }
         if (res.length > 2) {
-            magnitudeObject.io = res[2];
+            magnitudeObject.value = res[2];
         }
         if (res.length > 3) {
             magnitudeObject.target = res[3];
