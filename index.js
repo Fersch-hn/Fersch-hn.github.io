@@ -2,34 +2,6 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
-var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight - 450, 240]);
-
-var m = [110, 50, 20, 50],
-    w = width - m[1] - m[3],
-    h = height - m[0] - m[2],
-    xscale = d3.scale.ordinal(),
-    xscaleIO = d3.scale.linear().range([0, w]),
-    yscale = {},
-    dragging = {},
-    line = d3.svg.line(),
-    //this can control amount of ticks
-    axis = d3.svg.axis().orient("left").ticks(1 + height / 50),
-    data,
-    foreground,
-    background,
-    highlighted,
-    dimensions,
-    dimensionsIO = [],
-    legend,
-    render_speed = 50,
-    brush_count = 0,
-    excluded_groups = [];
-
-var colors = {
-    "test": [185, 56, 73]
-};
-
 // handle upload button
 function upload_button(el, callback) {
     var uploader = document.getElementById(el);
@@ -55,7 +27,36 @@ function upload_button(el, callback) {
         var file = this.files[0];
         reader.readAsText(file);       
     };
-};         
+};    
+
+
+var width = document.body.clientWidth,
+    height = d3.max([document.body.clientHeight - 450, 240]);
+
+var m = [110, 50, 50, 50],
+    w = width - m[1] - m[3],
+    h = height - m[0] - m[2],
+    xscale = d3.scale.ordinal(),
+    xscaleIO = d3.scale.linear().range([0, w]),
+    yscale = {},
+    dragging = {},
+    line = d3.svg.line(),
+    //this can control amount of ticks
+    axis = d3.svg.axis().orient("left").ticks(1 + height / 50),
+    data,
+    foreground,
+    background,
+    highlighted,
+    dimensions,
+    dimensionsIO = [],
+    legend,
+    render_speed = 50,
+    brush_count = 0,
+    excluded_groups = [];
+
+var colors = {
+    "test": [185, 56, 73]
+};
 
 // Scale chart and canvas height
 d3.select("#chart")
@@ -191,12 +192,12 @@ function load_dataset(fileData) {
                 .domain(data.map(function (d) { return d[k]; }))
                 .rangePoints([h, 0]));
         }
-    });     
-
+    });
+    
     xscale.domain(dimensions).rangeBands([0, w]);
     var domain = xscale.rangeBand() * dimensionsIO.length;
-    xscaleIO.domain([0, domain]);    
-
+    xscaleIO.domain([0, domain]);
+    console.log(domain);
     // Dont forget grouping IO
     // Add a group element for each input output.   
     var g = svg.selectAll(".dimensionIO")
@@ -223,16 +224,34 @@ function load_dataset(fileData) {
             return "translate(" + xscaleIO((i * xscale.rangeBand())) + ",0)";
         })
         .call(d3.behavior.drag()
-            .on("dragstart", function (d) {
-                dragging[d] = this.__origin__ = xscale(d);
+            .on("dragstart", function (d, i) {                
+                dragging[d] = this.__origin__ = xscaleIO((i * xscale.rangeBand()));
                 this.__dragged__ = false;
                 d3.select("#foreground").style("opacity", "0.35");
             })
-            .on("drag", function (d) {
+            .on("drag", function (d, i) {
+                
                 dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                dimensions.sort(function (a, b) { return position(a) - position(b); });
+                //console.log(dimensions);
+                
+                //Pending Resolve Drag
+                //var arr = dimensions.map(function (o, i) { return { idx: i, obj: o }; }).sort(function (a, b) {
+                //    console.log(a.obj, a.idx, b.obj, b.idx);
+                //    //return a.obj - b.obj;
+                //    console.log(dimensions[a.idx]);
+                    
+                //    return position(dimensions[a.idx], a.idx) - position(dimensions[b.idx], b.idx);
+                //});
+
+                //console.log(arr);
+                //debugger;
+
+                dimensions.sort(function (a, b) { console.log(i); return position(a, i) - position(b, i); });
+                //console.log(dimensions);
+              
                 xscale.domain(dimensions);
-                g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
+             
+                subGroup.attr("transform", function (d, i) { return "translate(" + position(d, i) + ")"; });
                 brush_count++;
                 this.__dragged__ = true;
 
@@ -243,15 +262,17 @@ function load_dataset(fileData) {
                     d3.select(this).select(".background").style("fill", null);
                 }
             })
-            .on("dragend", function (d) {
+            .on("dragend", function (d, i) {
                 if (!this.__dragged__) {
                     // no movement, invert axis
                     var extent = invert_axis(d);
 
                 } else {
-                    // reorder axes
-                    d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
 
+                    let iteration = { "TEUI": 0, "TEDI Whole": 1, "TEDI Res": 2, "GHGI": 3 };
+                    // reorder axes
+                    d3.select(this).transition().attr("transform", function (d) { console.log(iteration[d]); return "translate(" + xscaleIO((iteration[d] * xscale.rangeBand())) + ")"; });
+                    debugger;
                     var extent = yscale[d].brush.extent();
                 }
 
@@ -700,9 +721,9 @@ function color(d, a) {
     return ["hsla(", c[0], ",", c[1], "%,", c[2], "%,", a, ")"].join("");
 }
 
-function position(d) {
+function position(d, i) {
     var v = dragging[d];
-    return v == null ? xscale(d) : v;
+    return v == null ? xscaleIO((i * xscale.rangeBand())) : v;
 }
 
 // Handles a brush event, toggling the display of foreground lines.
