@@ -1,6 +1,32 @@
 // Parallel Coordinates
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
+var width = document.body.clientWidth,
+    height = d3.max([document.body.clientHeight - 450, 240]);
+
+var m = [110, 0, 20, 0],
+    w = width - m[1] - m[3],
+    h = height - m[0] - m[2],
+    xscale = d3.scale.ordinal().rangePoints([0, w], 1),
+    yscale = {},
+    dragging = {},
+    line = d3.svg.line(),
+    //this can control amount of ticks
+    axis = d3.svg.axis().orient("left").ticks(1 + height / 50),
+    data,
+    foreground,
+    background,
+    highlighted,
+    dimensions,
+    dimensionsIO,
+    legend,
+    render_speed = 50,
+    brush_count = 0,
+    excluded_groups = [];
+
+var colors = {
+    "test": [185, 56, 73]
+};
 
 // handle upload button
 function upload_button(el, callback) {
@@ -22,40 +48,11 @@ function upload_button(el, callback) {
             return;
         }
 
-        document.getElementById('error').innerHTML = "";      
+        document.getElementById('error').innerHTML = "";
 
         var file = this.files[0];
-        reader.readAsText(file);       
+        reader.readAsText(file);
     };
-};    
-
-
-var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight - 450, 240]);
-
-var m = [110, 50, 50, 50],
-    w = width - m[1] - m[3],
-    h = height - m[0] - m[2],
-    xscale = d3.scale.ordinal(),
-    xscaleIO = d3.scale.linear().range([0, w]),
-    yscale = {},
-    dragging = {},
-    line = d3.svg.line(),
-    //this can control amount of ticks
-    axis = d3.svg.axis().orient("left").ticks(1 + height / 50),
-    data,
-    foreground,
-    background,
-    highlighted,
-    dimensions,
-    dimensionsIO = [],
-    legend,
-    render_speed = 50,
-    brush_count = 0,
-    excluded_groups = [];
-
-var colors = {
-    "test": [185, 56, 73]
 };
 
 // Scale chart and canvas height
@@ -93,7 +90,7 @@ var svg = d3.select("svg")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
     //Border SVG
     .attr("style", "outline: thin solid black; outline-offset: 5px;")
-    
+
 
 // Load the data and visualization
 function load_dataset(fileData) {
@@ -107,10 +104,10 @@ function load_dataset(fileData) {
             }
         };
         return d;
-    });     
-    
+    });
+
     //Get Magnitudes, Input/Outputs and Targets
-    var magnitudes = [];    
+    var magnitudes = [];
     var header = data[0];
     var oldLabels = [];
 
@@ -118,8 +115,8 @@ function load_dataset(fileData) {
 
         oldLabels.push(key);
         let res = key.split(":");
-        let magnitudeObject = {};       
-       
+        let magnitudeObject = {};
+
         if (res.length > 0) {
             magnitudeObject.name = res[0];
         }
@@ -134,54 +131,28 @@ function load_dataset(fileData) {
         } else {
             magnitudeObject.target = null;
         }
-        magnitudes.push(magnitudeObject);      
+        magnitudes.push(magnitudeObject);
     }
 
     //Create Data with clean key names
-    var newData = []; 
-    for (let e in data) {       
-        var unsplitted = data[e];       
-       
-        var data2 = magnitudes.map(function (m, i) {          
-            let key = oldLabels[i];         
+    var newData = [];
+    for (let e in data) {
+        var unsplitted = data[e];
+
+        var data2 = magnitudes.map(function (m, i) {
+            let key = oldLabels[i];
             return { labelName: m.name, value: unsplitted[key] }
-        })      
-        
+        })
+
         let newrow = {};
-        data2.map(function (d) { newrow[d.labelName] = d.value; });    
+        data2.map(function (d) { newrow[d.labelName] = d.value; });
         newData.push(newrow);
     }
 
-    data = newData;  
-    
-    //Group for Inputs and Outputs
-    var columnKeys = Object.keys(data[0]);
-   
-    var inputs = [];
-    var outputs = [];
-    columnKeys.map(function (d) {      
-        let obj = magnitudes.find(m => m.name === d);
+    data = newData;
 
-        if (obj.io === "Input") inputs.push(d);        
-        else if (obj.io === "Output") outputs.push(d);
-    });
-
-    var groupedColumns = [{ key: "Input", values: inputs },
-        { key: "Output", values: outputs }];  
-
-    //Get Cummulative and Lengths
-    var cummulative = 0;
-    groupedColumns.forEach(function (val, i) {       
-        val.cummulative = cummulative;
-        cummulative += val.values.length;
-        val.values.forEach(function (values) {
-            values.parentKey = val.key;
-            dimensionsIO.push(i);
-        })
-    });   
-
-    //Yscales for each column
-    dimensions = d3.keys(data[0]).filter(function (k) {
+    //Scale for the rest of the data
+    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scale.linear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
@@ -192,66 +163,26 @@ function load_dataset(fileData) {
                 .domain(data.map(function (d) { return d[k]; }))
                 .rangePoints([h, 0]));
         }
-    });
-    
-    xscale.domain(dimensions).rangeBands([0, w]);
-    var domain = xscale.rangeBand() * dimensionsIO.length;
-    xscaleIO.domain([0, domain]);
-    console.log(domain);
-    // Dont forget grouping IO
-    // Add a group element for each input output.   
-    var g = svg.selectAll(".dimensionIO")
-        .data(groupedColumns)
-        .enter().append("svg:g")
-        .attr("class", "dimensionIO")
-        .attr("transform", function (d) { return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)"; });
+    }));
 
-        g.append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
-        .attr('y', -80)
-        .attr('x', 0)
-        .text(function (d) { return d.key; });    
-   
     // Add a group element for each dimension.
-    var subGroup = g.selectAll(".dimension")
-        .data(function (d) {
-            return d.values;
-        })
+    var g = svg.selectAll(".dimension")
+        .data(dimensions)
         .enter().append("svg:g")
         .attr("class", "dimension")
-        .attr("transform", function (d, i) {           
-            return "translate(" + xscaleIO((i * xscale.rangeBand())) + ",0)";
-        })
+        .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
-            .on("dragstart", function (d, i) {                
-                dragging[d] = this.__origin__ = xscaleIO((i * xscale.rangeBand()));
+            .on("dragstart", function (d) {
+                dragging[d] = this.__origin__ = xscale(d);
                 this.__dragged__ = false;
                 d3.select("#foreground").style("opacity", "0.35");
             })
-            .on("drag", function (d, i) {
-                
+            .on("drag", function (d) {
                 dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                //console.log(dimensions);
-                
-                //Pending Resolve Drag
-                //var arr = dimensions.map(function (o, i) { return { idx: i, obj: o }; }).sort(function (a, b) {
-                //    console.log(a.obj, a.idx, b.obj, b.idx);
-                //    //return a.obj - b.obj;
-                //    console.log(dimensions[a.idx]);
-                    
-                //    return position(dimensions[a.idx], a.idx) - position(dimensions[b.idx], b.idx);
-                //});
+                dimensions.sort(function (a, b) { console.log(a, position(a), b, position(b)); return position(a) - position(b); });
 
-                //console.log(arr);
-                //debugger;
-
-                dimensions.sort(function (a, b) { console.log(i); return position(a, i) - position(b, i); });
-                //console.log(dimensions);
-              
                 xscale.domain(dimensions);
-             
-                subGroup.attr("transform", function (d, i) { return "translate(" + position(d, i) + ")"; });
+                g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
                 brush_count++;
                 this.__dragged__ = true;
 
@@ -262,17 +193,14 @@ function load_dataset(fileData) {
                     d3.select(this).select(".background").style("fill", null);
                 }
             })
-            .on("dragend", function (d, i) {
+            .on("dragend", function (d) {
                 if (!this.__dragged__) {
                     // no movement, invert axis
                     var extent = invert_axis(d);
 
                 } else {
-
-                    let iteration = { "TEUI": 0, "TEDI Whole": 1, "TEDI Res": 2, "GHGI": 3 };
                     // reorder axes
-                    d3.select(this).transition().attr("transform", function (d) { console.log(iteration[d]); return "translate(" + xscaleIO((iteration[d] * xscale.rangeBand())) + ")"; });
-                    debugger;
+                    d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
                     var extent = yscale[d].brush.extent();
                 }
 
@@ -293,67 +221,98 @@ function load_dataset(fileData) {
                 delete dragging[d];
             }))
 
-    
+    //Group for Inputs and Outputs
+    var columnKeys = Object.keys(data[0]);
+
+    var inputs = [];
+    var outputs = [];
+    columnKeys.map(function (d) {
+        let obj = magnitudes.find(m => m.name === d);
+
+        if (obj.io === "Input") inputs.push(d);
+        else if (obj.io === "Output") outputs.push(d);
+    });
+
+    var groupedColumns = [{ key: "Input", values: inputs },
+    { key: "Output", values: outputs }];
+
+    var labelPlace = getLabelPlacing(groupedColumns);
+    var dataIO = ["Input", "Output"];
+
+    // Add a group element for each input output.   
+    svg.selectAll(".dimensionIO")
+        .data(dataIO)
+        .enter().append("svg:g")
+        .attr("class", "dimensionIO")
+        .attr("transform", function (d) {
+            return "translate( " + labelPlace[d] + " )";
+        })
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'axis-label')
+        .attr('y', -80)
+        .attr('x', 0)
+        .text(String);
 
     // Add an axis and title.
-    subGroup.append("svg:g")
-        .attr("class", "axis")       
+    g.append("svg:g")
+        .attr("class", "axis")
         .attr("transform", "translate(0,0)")
-        .each(function (d) {           
+        .each(function (d) {
             d3.select(this).call(axis.scale(yscale[d]));
-        })      
+        })
         .append("svg:text")
         .attr("text-anchor", "middle")
-//Change Label Spacing.
+        //Change Label Spacing.
         .attr("y", -50)
         .attr("x", 0)
         .attr("class", "label")
         .text(String)
         .append("title")
-        .text("Click to invert. Drag to reorder");   
-       
+        .text("Click to invert. Drag to reorder");
+
 
     //Add Extra Labels
     //Measure Magnitudes
-    subGroup.append("svg:g")
+    g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
         .attr('y', -30)
         .attr('x', 0)
-        .text((d) => {                   
-            let obj = magnitudes.find(m => m.name === d);                   
+        .text((d) => {
+            let obj = magnitudes.find(m => m.name === d);
             return obj.value;
         })
-        
+
     //Target    
-    subGroup.append("svg:g")
+    g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
         .attr('y', -10)
         .attr('x', 0)
         .text((d) => {
-            let obj = magnitudes.find(m => m.name === d);           
+            let obj = magnitudes.find(m => m.name === d);
             if (obj.target === null) { return " " }
             else { return obj.target; }
         });
-   
-    var firstTarget = 1;    
-    subGroup.append("svg:g")
+
+    var firstTarget = 1;
+    g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'axis-label')
         .attr('y', -10)
         .attr('x', -40)
-        .text((d) => {           
+        .text((d) => {
             let obj = magnitudes.find(m => m.name === d);
             if (!(obj.target === null)) { firstTarget++ }
             if (firstTarget === 2) { return "Target: " }
         });
 
     var firstOutput = 1;
-    subGroup.append("line")
+    g.append("line")
         .attr("x1", -65)
         .attr("y1", -80)
         .attr("x2", -65)
@@ -361,14 +320,14 @@ function load_dataset(fileData) {
         .style("stroke", function (d) {
             let obj = magnitudes.find(m => m.name === d);
             if (!(obj.io === "Input")) { firstOutput++ }
-            if (firstOutput === 2) { return "grey"; }            
+            if (firstOutput === 2) { return "grey"; }
         })
         .style("fill", "red")
         .style("stroke-width", 4);
 
     // Add and store a brush for each axis.
-    subGroup.append("svg:g")
-        .attr("class", "brush")    
+    g.append("svg:g")
+        .attr("class", "brush")
         .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
         .selectAll("rect")
         .style("visibility", null)
@@ -377,17 +336,17 @@ function load_dataset(fileData) {
         .append("title")
         .text("Drag up or down to brush along this axis");
 
-    subGroup.selectAll(".extent")
+    g.selectAll(".extent")
         .append("title")
         .text("Drag or resize this filter");
 
 
     legend = create_legend(colors, brush);
-    
+
     //Table
     var column_names = Object.keys(data[0]);
-    var clicks = { };
-    column_names.map(function (a) { clicks[a] = 0; });  
+    var clicks = {};
+    column_names.map(function (a) { clicks[a] = 0; });
 
     // draw the table
     d3.select("#table").append("div")
@@ -398,7 +357,7 @@ function load_dataset(fileData) {
 
     d3.select("#FilterableTable").append("h1")
         .attr("id", "title")
-        .text("My Data")      
+        .text("My Data")
 
     var table = d3.select("#FilterableTable").append("table");
     table.append("thead").append("tr");
@@ -411,52 +370,50 @@ function load_dataset(fileData) {
 
     var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
 
-   
+    // draw table body with rows
+    table.append("tbody")
 
-        // draw table body with rows
-        table.append("tbody")
+    // data bind
+    rows = table.select("tbody").selectAll("tr")
+        .data(data, function (d) { return d.id; });
 
-        // data bind
-        rows = table.select("tbody").selectAll("tr")
-            .data(data, function (d) { return d.id; });
+    // enter the rows
+    rows.enter()
+        .append("tr")
 
-        // enter the rows
-        rows.enter()
-            .append("tr")
-
-        // enter td's in each row
-        row_entries = rows.selectAll("td")
-            .data(function (d) {                
-                var arr = [];
-                for (var k in d) {
-                    if (d.hasOwnProperty(k)) {
-                        arr.push(d[k]);
-                    }
-                }                
-                return arr ;
-            })
-            .enter()
-            .append("td")
-
-        // draw row entries with no anchor 
-        row_entries_no_anchor = row_entries.filter(function (d) {
-            return (/https?:\/\//.test(d) == false)
+    // enter td's in each row
+    row_entries = rows.selectAll("td")
+        .data(function (d) {
+            var arr = [];
+            for (var k in d) {
+                if (d.hasOwnProperty(k)) {
+                    arr.push(d[k]);
+                }
+            }
+            return arr;
         })
-        row_entries_no_anchor.text(function (d) { return d; })
+        .enter()
+        .append("td")
 
-        // draw row entries with anchor
-        row_entries_with_anchor = row_entries.filter(function (d) {
-            return (/https?:\/\//.test(d) == true)
-        })
-        row_entries_with_anchor
-            .append("a")
-            .attr("href", function (d) { return d; })
-            .attr("target", "_blank")
-            .text(function (d) { return d; })        
+    // draw row entries with no anchor 
+    row_entries_no_anchor = row_entries.filter(function (d) {
+        return (/https?:\/\//.test(d) == false)
+    })
+    row_entries_no_anchor.text(function (d) { return d; })
+
+    // draw row entries with anchor
+    row_entries_with_anchor = row_entries.filter(function (d) {
+        return (/https?:\/\//.test(d) == true)
+    })
+    row_entries_with_anchor
+        .append("a")
+        .attr("href", function (d) { return d; })
+        .attr("target", "_blank")
+        .text(function (d) { return d; })
 
     /**  sort functionality **/
     headers
-        .on("click", function (d) {           
+        .on("click", function (d) {
             if (!(_.isNumber(data[0][d]))) {
                 clicks[d]++;
                 if (clicks[d] % 2 == 0) {
@@ -515,8 +472,7 @@ function load_dataset(fileData) {
             }
 
         });
-        
-                    
+
 
     // Render full foreground
     brush();
@@ -721,15 +677,14 @@ function color(d, a) {
     return ["hsla(", c[0], ",", c[1], "%,", c[2], "%,", a, ")"].join("");
 }
 
-function position(d, i) {
+function position(d) {
     var v = dragging[d];
-    return v == null ? xscaleIO((i * xscale.rangeBand())) : v;
+    return v == null ? xscale(d) : v;
 }
 
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
 function brush() {
-  
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
         extents = actives.map(function (p) { return yscale[p].brush.extent(); });
@@ -778,7 +733,17 @@ function brush() {
             return actives.every(function (p, dimension) {
                 return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1];
             }) ? selected.push(d) : null;
-        }); 
+        });
+
+
+
+    if (selected.length < data.length && selected.length > 0) {
+        d3.select("#keep-data").attr("disabled", null);
+        d3.select("#exclude-data").attr("disabled", null);
+    } else {
+        d3.select("#keep-data").attr("disabled", "disabled");
+        d3.select("#exclude-data").attr("disabled", "disabled");
+    };
 
     // total by food group
     var tallies = _(selected)
@@ -816,7 +781,7 @@ function paths(selected, ctx, count) {
 
     selection_stats(opacity, n, data.length)
 
-    shuffled_data = _.shuffle(selected); 
+    shuffled_data = _.shuffle(selected);
 
     data_table(shuffled_data.slice(0, 25));
 
@@ -962,29 +927,13 @@ window.onresize = function () {
         .select("g")
         .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-    //Scale Again
-    xscaleIO = d3.scale.linear().range([0, w]);
-    xscale = d3.scale.ordinal();    
-
-    xscale.domain(dimensions).rangeBands([0, w]);
-    domain = xscale.rangeBand() * dimensionsIO.length;
-    xscaleIO.domain([0, domain]);
-  
+    xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
     dimensions.forEach(function (d) {
         yscale[d].range([h, 0]);
     });
 
-    //Update Axis Position
-    var g = d3.selectAll(".dimensionIO")
-        .attr("transform", function (d) {
-            return "translate(" + xscaleIO((d.cummulative * xscale.rangeBand())) + ",0)";
-        });
-
-    g.selectAll(".dimension")
-        .attr("transform", function (d, i) {
-            return "translate(" + xscaleIO((i * xscale.rangeBand())) + ", 0)";
-        });
-
+    d3.selectAll(".dimension")
+        .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
     // update brush placement
     d3.selectAll(".brush")
         .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
@@ -993,8 +942,8 @@ window.onresize = function () {
     // update axis placement
     axis = axis.ticks(1 + height / 50),
         d3.selectAll(".axis")
-            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });  
-   
+            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
+
     // render data
     brush();
 };
@@ -1072,5 +1021,25 @@ function light_theme() {
 function search(selection, str) {
     pattern = new RegExp(str, "i")
     return _(selection).filter(function (d) { return pattern.exec(d.name); });
+}
+
+function getLabelPlacing(groupedColumns) {
+
+    var inputLength = groupedColumns[0].values.length;
+    var lastInput = groupedColumns[0].values[inputLength - 1];
+    var firstInput = groupedColumns[0].values[0];
+
+    var centerInput = (xscale(lastInput) - xscale(firstInput)) / 2;
+
+    var outputLength = groupedColumns[1].values.length;
+    var lastOutput = groupedColumns[1].values[outputLength - 1];
+    var firstOutput = groupedColumns[1].values[0];
+
+    var centerOutput = (xscale(lastOutput) - xscale(firstOutput)) / 2;
+
+    var placeInput = xscale(firstInput) + centerInput;
+    var placeOutput = xscale(firstOutput) + centerOutput;
+
+    return { "Input": placeInput, "Output": placeOutput };
 }
 
