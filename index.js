@@ -9,6 +9,7 @@ var m = [110, 0, 20, 0],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
     yscale = {},
+    ordinal = [],
     dragging = {},
     line = d3.svg.line(),
     //this can control amount of ticks
@@ -150,7 +151,7 @@ function load_dataset(fileData) {
     }
 
     data = newData;
-
+   
     //Scale for the rest of the data
     xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
         if (_.isNumber(data[0][k])) {
@@ -160,8 +161,8 @@ function load_dataset(fileData) {
         }
         else {
             return (true) && (yscale[k] = d3.scale.ordinal()
-                .domain(data.map(function (d) { return d[k]; }))
-                .rangePoints([h, 0]));
+                .domain(data.map(function (d) { ordinal.push(k); return d[k]; }))    
+                .rangePoints([h, 0], .1));
         }
     }));
 
@@ -618,13 +619,16 @@ function invert_axis(d) {
         var extent = yscale[d].brush.extent();
     }
     if (yscale[d].inverted == true) {
-        yscale[d].range([h, 0]);
+        if (ordinal.includes(d)) yscale[d].rangePoints([h, 0], .1);
+        else yscale[d].range([h, 0]);
+        
         d3.selectAll('.label')
             .filter(function (p) { return p == d; })
             .style("text-decoration", null);
         yscale[d].inverted = false;
     } else {
-        yscale[d].range([0, h]);
+        if (ordinal.includes(d)) yscale[d].rangePoints([0, h], .1);
+        else yscale[d].range([0, h]);
         d3.selectAll('.label')
             .filter(function (p) { return p == d; })
             .style("text-decoration", "underline");
@@ -853,13 +857,13 @@ function rescale() {
         if (yscale[d].inverted) {
             yscale[d] = d3.scale.linear()
                 .domain(d3.extent(data, function (p) { return +p[d]; }))
-                .range([0, h]);
+                .range([0, h], .1);
             yscale[d].inverted = true;
         } else {
             yscale[d] = d3.scale.linear()
                 .domain(d3.extent(data, function (p) { return +p[d]; }))
-                .range([h, 0]);
-        }
+                .range([h, 0], .1);
+        }   
     });
 
     update_ticks();
@@ -929,7 +933,7 @@ window.onresize = function () {
 
     xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
     dimensions.forEach(function (d) {
-        yscale[d].range([h, 0]);
+        yscale[d].range([h, 0], .1);
     });
 
     d3.selectAll(".dimension")
