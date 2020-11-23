@@ -1,4 +1,4 @@
-Wall:R-Value:Input,Window:U-Value:Input,SHGC:NA:Input,Roof:NA:Input,Res HRV:(%):Input,SHW:Type:Input,SHW Reduce:NA:Input,Appliances:NA:Input,MUA:NA:Input,TEUI:(kWh/m2):Output:120,GHGI:(kgCO2/m2):Output:100,TEDI:(kWh/m2):Output:200,LEED:Pts:Output:100,Energy Cost:($):Output:100,NPV:NA:Output:100
+Wall:Input:R-Value,Window:Input:U-Value,SHGC:Input:NA,Roof:Input:NA,Res HRV:Input:(%),SHW:Input:Type,SHW Reduce:Input:NA,Appliances:Input:NA,MUA:Input:NA,TEUI:Output:(kWh/m2):120,GHGI:Output:(kgCO2/m2):100,TEDI:Output:(kWh/m2):200,LEED:Output:Pts:100,Energy Cost:Output:($):100,NPV:Output:NA:100
 R-ip 8,U-ip 0.15,0.4,30,90,Gas,0,N,HP,106.5,5.8,27.6,13,246538,665859
 R-ip 8,U-ip 0.15,0.4,20,90,Gas,0,N,HP,107,5.8,28.3,13,248099,688084
 R-ip 8,U-ip 0.15,0.25,30,90,Gas,0,N,HP,107.6,5.8,29.3,13,249792,712176
