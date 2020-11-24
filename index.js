@@ -25,8 +25,10 @@ var m = [110, 0, 20, 0],
     brush_count = 0,
     excluded_groups = [];
 
+//HSL
 var colors = {
-    "test": [185, 56, 73]
+    "test": [225, 53, 70],    
+    "background": [225, 5, 59]
 };
 
 // handle upload button
@@ -69,7 +71,7 @@ d3.selectAll("canvas")
 // Foreground canvas for primary view
 foreground = document.getElementById('foreground').getContext('2d');
 foreground.globalCompositeOperation = "destination-over";
-foreground.strokeStyle = "rgba(0,100,160,0.1)";
+foreground.strokeStyle = "rgba(0,100,160,0.1)"; 
 foreground.lineWidth = 1.7;
 foreground.fillText("Loading...", w / 2, h / 2);
 
@@ -80,7 +82,7 @@ highlighted.lineWidth = 4;
 
 // Background canvas
 background = document.getElementById('background').getContext('2d');
-background.strokeStyle = "rgba(0,100,160,0.1)";
+background.strokeStyle = "rgba(85,72,72,0.7)";
 background.lineWidth = 1.7;
 
 // SVG for ticks, labels, and interactions
@@ -180,7 +182,7 @@ function load_dataset(fileData) {
             })
             .on("drag", function (d) {
                 dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                dimensions.sort(function (a, b) { console.log(a, position(a), b, position(b)); return position(a) - position(b); });
+                dimensions.sort(function (a, b) { return position(a) - position(b); });
 
                 xscale.domain(dimensions);
                 g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
@@ -474,11 +476,19 @@ function load_dataset(fileData) {
 
         });
 
+    //Add Background Lines
+    background = svg.append("g")
+        .attr("class", "background")
+        .selectAll("path")
+        .data(data) 
+        .enter().append("path")
+        .attr("d", bPath);
 
     // Render full foreground
     brush();
-
 };
+
+
 
 // copy one canvas to another, grayscale
 function gray_copy(source, target) {
@@ -527,7 +537,7 @@ function create_legend(colors, brush) {
 
     legend
         .append("span")
-        .style("background", function (d, i) { return color(d, 0.85) })
+        .style("background", function (d, i) { return color("test", 0.85) })
         .attr("class", "color-bar");
 
     legend
@@ -543,9 +553,10 @@ function create_legend(colors, brush) {
 }
 
 // render polylines i to i+render_speed 
-function render_range(selection, i, max, opacity) {
-    selection.slice(i, max).forEach(function (d) {
-        path(d, foreground, color("test", opacity));
+function render_range(selection, i, max, opacity, ctx) {
+    
+    selection.slice(i, max).forEach(function (d) {        
+        path(d, ctx, color("test", opacity));
     });
 };
 
@@ -603,7 +614,7 @@ function selection_stats(opacity, n, total) {
 function highlight(d) {
     d3.select("#foreground").style("opacity", "0.25");
     d3.selectAll(".row").style("opacity", function (p) { return (d.group == p) ? null : "0.3" });
-    path(d, highlighted, color("test", 1));
+    path(d, highlighted, color(d.group, 1));
 }
 
 // Remove highlight
@@ -704,7 +715,7 @@ function brush() {
                     .style('font-weight', 'bold')
                     .style('font-size', '13px')
                     .style('display', function () {
-                        var value = d3.select(this).data();
+                        var value = d3.select(this).data();                        
                         return extent[0] <= value && value <= extent[1] ? null : "none"
                     });
             } else {
@@ -771,31 +782,30 @@ function brush() {
 
     legend.selectAll(".tally")
         .text(function (d, i) { return tallies[d].length });
-
+    
     // Render selected lines
-    paths(selected, foreground, brush_count, true);
+    paths(selected, foreground, brush_count, true);  
 }
 
 // render a set of polylines on a canvas
 function paths(selected, ctx, count) {
+
     var n = selected.length,
         i = 0,
         opacity = d3.min([2 / Math.pow(n, 0.3), 1]),
         timer = (new Date()).getTime();
-
-    selection_stats(opacity, n, data.length)
-
-    shuffled_data = _.shuffle(selected);
+  
+    selection_stats(opacity, n, data.length);
+    shuffled_data = _.shuffle(selected);  
 
     data_table(shuffled_data.slice(0, 25));
-
     ctx.clearRect(0, 0, w + 1, h + 1);
-
+     
     // render all lines until finished or a new brush event
     function animloop() {
         if (i >= n || count < brush_count) return true;
         var max = d3.min([i + render_speed, n]);
-        render_range(shuffled_data, i, max, opacity);
+        render_range(shuffled_data, i, max, opacity, ctx);
         render_stats(max, n, render_speed);
         i = max;
         timer = optimize(timer);  // adjusts render_speed
@@ -1027,6 +1037,7 @@ function search(selection, str) {
     return _(selection).filter(function (d) { return pattern.exec(d.name); });
 }
 
+//Place IOLabels
 function getLabelPlacing(groupedColumns) {
 
     var inputLength = groupedColumns[0].values.length;
@@ -1047,3 +1058,37 @@ function getLabelPlacing(groupedColumns) {
     return { "Input": placeInput, "Output": placeOutput };
 }
 
+function containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//Add Lines Just for color
+function bPath(d) {
+    let ctx = background;
+    let bColor = color("background", 0.2);
+    
+    if (bColor) ctx.strokeStyle = bColor;
+    ctx.beginPath();
+    var x0 = xscale(0) - 15,
+        y0 = yscale[dimensions[0]](d[dimensions[0]]);   // left edge
+    ctx.moveTo(x0, y0);
+    dimensions.map(function (p, i) {
+        var x = xscale(p),
+            y = yscale[p](d[p]);
+        var cp1x = x - 0.88 * (x - x0);
+        var cp1y = y0;
+        var cp2x = x - 0.12 * (x - x0);
+        var cp2y = y;
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+        x0 = x;
+        y0 = y;
+    });
+    ctx.lineTo(x0 + 15, y0);                               // right edge
+    ctx.stroke();
+}   
