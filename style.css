@@ -309,3 +309,7 @@ button#exclude-data {
 table {    
     margin: 0 auto;
 }
+
+.selected{
+    background-color: cornflowerblue;
+}
