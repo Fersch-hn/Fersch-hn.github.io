@@ -23,7 +23,8 @@ var m = [110, 0, 20, 0],
     legend,
     render_speed = 50,
     brush_count = 0,
-    excluded_groups = [];
+    excluded_groups = [],
+    tableSelect = [];
 
 //HSL
 var colors = {
@@ -569,10 +570,10 @@ function position(d) {
 
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
-function brush() {
+function brush() {    
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
-        extents = actives.map(function (p) { return yscale[p].brush.extent(); });
+        extents = actives.map(function (p) { return yscale[p].brush.extent(); });  
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -614,13 +615,15 @@ function brush() {
         .filter(function (d) {
             return !_.contains(excluded_groups, d.group);
         })
-        .map(function (d) {
+        .map(function (d) {        
             return actives.every(function (p, dimension) {
                 return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1];
             }) ? selected.push(d) : null;
         });
 
-
+    if (tableSelect.length > 0) {
+        selected = tableSelect
+    }
 
     if (selected.length < data.length && selected.length > 0) {
         d3.select("#keep-data").attr("disabled", null);
@@ -976,11 +979,13 @@ function drawTable(selected, data) {
     //Remove Existing Table
     d3.select("#table div").remove();
 
-    //Table
+    //Table   
     var column_names = Object.keys(data[0]);
-    var clicks = {};
-    column_names.map(function (a) { clicks[a] = 0; });
 
+     //Record sort clicks
+    var headerClicks = {};
+    column_names.map(function (a) { headerClicks[a] = 0; });
+   
     // draw the table
     d3.selectAll("#table").append("div")
         .attr("id", "container")
@@ -1032,28 +1037,30 @@ function drawTable(selected, data) {
         .enter()
         .append("td")
 
-    // draw row entries with no anchor 
-    row_entries_no_anchor = row_entries.filter(function (d) {
-        return (/https?:\/\//.test(d) == false)
-    })
-    row_entries_no_anchor.text(function (d) { return d; })
+    rows
+        .on("click", function (d) {         
+            if (containsObject(d, tableSelect)) {
+                //deselect
+                let index = tableSelect.indexOf(d);
+                tableSelect.splice(index, 1);
+                brush();
+            }
+            else {
+                //select     
+                tableSelect.push(d);
+                brush();
+            }            
+        });
 
-    // draw row entries with anchor
-    row_entries_with_anchor = row_entries.filter(function (d) {
-        return (/https?:\/\//.test(d) == true)
-    })
-    row_entries_with_anchor
-        .append("a")
-        .attr("href", function (d) { return d; })
-        .attr("target", "_blank")
-        .text(function (d) { return d; })
+    row_entries_no_anchor = row_entries;
+    row_entries_no_anchor.text(function (d) { return d; });   
 
     /**  sort functionality **/
     headers
         .on("click", function (d) {
             if (!(_.isNumber(data[0][d]))) {
-                clicks[d]++;
-                if (clicks[d] % 2 == 0) {
+                headerClicks[d]++;
+                if (headerClicks[d] % 2 == 0) {
                     // sort ascending: alphabetically
                     rows.sort(
                         function (a, b) {
@@ -1068,7 +1075,7 @@ function drawTable(selected, data) {
                             }
                         });
                 }
-                else if (clicks[d] % 2 != 0) {
+                else if (headerClicks[d] % 2 != 0) {
                     // sort descending: alphabetically
                     rows.sort(function (a, b) {
                         if (a[d].toUpperCase() < b[d].toUpperCase()) {
@@ -1082,8 +1089,8 @@ function drawTable(selected, data) {
                 }
             }
             else {
-                clicks[d]++;
-                if (clicks[d] % 2 == 0) {
+                headerClicks[d]++;
+                if (headerClicks[d] % 2 == 0) {
                     rows.sort(function (a, b) {
                         if (+a[d] < +b[d]) {
                             return -1;
@@ -1094,7 +1101,7 @@ function drawTable(selected, data) {
                         }
                     });
                 }
-                else if (clicks[d] % 2 != 0) {
+                else if (headerClicks[d] % 2 != 0) {
                     // sort descending: numerically
                     rows.sort(function (a, b) {
                         if (+a[d] < +b[d]) {
