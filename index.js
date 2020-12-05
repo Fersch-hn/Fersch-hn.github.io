@@ -24,7 +24,8 @@ var m = [110, 0, 20, 0],
     render_speed = 50,
     brush_count = 0,
     excluded_groups = [],
-    tableSelect = [];
+    tableSelect = [],
+    brushing = false;
 
 //HSL
 var colors = {
@@ -177,52 +178,59 @@ function load_dataset(fileData) {
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
             .on("dragstart", function (d) {
-                dragging[d] = this.__origin__ = xscale(d);
-                this.__dragged__ = false;
-                d3.select("#foreground").style("opacity", "0.35");
+                if (!brushing) {
+                    dragging[d] = this.__origin__ = xscale(d);
+                    this.__dragged__ = false;
+                    d3.select("#foreground").style("opacity", "0.35");
+                }
+                
             })
             .on("drag", function (d) {
-                dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                dimensions.sort(function (a, b) { return position(a) - position(b); });
+                if (!brushing) {
+                    dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+                    dimensions.sort(function (a, b) { return position(a) - position(b); });
 
-                xscale.domain(dimensions);
-                g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
-                brush_count++;
-                this.__dragged__ = true;
+                    xscale.domain(dimensions);
+                    g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
+                    brush_count++;
+                    this.__dragged__ = true;
 
-                // Feedback for axis deletion if dropped
-                if (dragging[d] < 12 || dragging[d] > w - 12) {
-                    d3.select(this).select(".background").style("fill", "#b00");
-                } else {
-                    d3.select(this).select(".background").style("fill", null);
+                    // Feedback for axis deletion if dropped
+                    if (dragging[d] < 12 || dragging[d] > w - 12) {
+                        d3.select(this).select(".background").style("fill", "#b00");
+                    } else {
+                        d3.select(this).select(".background").style("fill", null);
+                    }
                 }
             })
             .on("dragend", function (d) {
-                if (!this.__dragged__) {
-                    // no movement, invert axis
-                    var extent = invert_axis(d);
+                if (!brushing) {
+                    if (!this.__dragged__) {
+                        // no movement, invert axis
+                        var extent = invert_axis(d);
 
-                } else {
-                    // reorder axes
-                    d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
-                    var extent = yscale[d].brush.extent();
+                    } else {
+                        // reorder axes
+                        d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
+                        var extent = yscale[d].brush.extent();
+                    }
+
+                    // remove axis if dragged all the way left
+                    if (dragging[d] < 12 || dragging[d] > w - 12) {
+                        remove_axis(d, g);
+                    }
+
+                    // TODO required to avoid a bug
+                    xscale.domain(dimensions);
+                    update_ticks(d, extent);
+
+                    // rerender
+                    d3.select("#foreground").style("opacity", null);
+                    brush();
+                    delete this.__dragged__;
+                    delete this.__origin__;
+                    delete dragging[d];
                 }
-
-                // remove axis if dragged all the way left
-                if (dragging[d] < 12 || dragging[d] > w - 12) {
-                    remove_axis(d, g);
-                }
-
-                // TODO required to avoid a bug
-                xscale.domain(dimensions);
-                update_ticks(d, extent);
-
-                // rerender
-                d3.select("#foreground").style("opacity", null);
-                brush();
-                delete this.__dragged__;
-                delete this.__origin__;
-                delete dragging[d];
             }))
 
     //Group for Inputs and Outputs
@@ -330,15 +338,60 @@ function load_dataset(fileData) {
         .style("stroke-width", 4);
 
     // Add and store a brush for each axis.
+    //g.append("svg:g")
+    //    .attr("class", "brush")
+    //    .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
+    //    .selectAll("rect")
+    //    .style("visibility", null)
+    //    .attr("x", -23)
+    //    .attr("width", 36)
+    //    .append("title")
+    //    .text("Drag up or down to brush along this axis");
+
+
+    // Add and store a brush for each axis.
     g.append("svg:g")
         .attr("class", "brush")
-        .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
-        .selectAll("rect")
-        .style("visibility", null)
-        .attr("x", -23)
-        .attr("width", 36)
-        .append("title")
-        .text("Drag up or down to brush along this axis");
+        .each(function (d) {
+            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+                .extentAdaption(resizeExtent)
+                .y(yscale[d]).on("brush", function () {
+                    brushing = true;
+                    brush();
+                })
+                //.y(yscale[d]).on("click", function () {
+                //    console.log("Hi");
+                //})
+
+            );
+        })
+        .selectAll("rect").call(resizeExtent)
+        //.on("click", function (d) { console.log("Hi", d); yscale[d].brush.clear() });
+        //.style("visibility", null)
+        //.attr("x", -23)
+        //.attr("width", 36)
+        //.append("title")
+        //.text("Drag up or down to brush along this axis");
+
+    //d3.selectAll(".brush").on("click", function (d) { console.log("Hi", d); yscale[d].brush.clear() });
+    //console.log(d3.selectAll(".brush"));
+
+    //d3.selectAll(".brush-container .brush").call(brush.clear());
+
+    //g.selectAll("brush")
+    //    .each(function (d) {
+    //        d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+    //            .extentAdaption(resizeExtent)
+    //            .y(yscale[d]).on("brush", function () {
+    //                brushing = true;
+    //                brush();
+    //            })
+    //            .y(yscale[d]).on("click", function () {
+    //                console.log("Hi");
+    //            })
+    //        );
+    //    });
+
 
     g.selectAll(".extent")
         .append("title")
@@ -538,18 +591,26 @@ function path(d, ctx, color) {
 */
 
 function path(d, ctx, color) {
+    console.log(d);
+    debugger;
     if (color) ctx.strokeStyle = color;
     ctx.beginPath();
-    var x0 = xscale(0) - 15,
+    var x0 = xscale(dimensions[0]) - 15,
         y0 = yscale[dimensions[0]](d[dimensions[0]]);   // left edge
+    console.log(xscale(0));
+
     ctx.moveTo(x0, y0);
     dimensions.map(function (p, i) {
         var x = xscale(p),
             y = yscale[p](d[p]);
         var cp1x = x - 0.88 * (x - x0);
         var cp1y = y0;
+
+        console.log(x, x0);
+        console.log(cp1x);
         var cp2x = x - 0.12 * (x - x0);
         var cp2y = y;
+        console.log(cp2x);
         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
         x0 = x;
         y0 = y;
@@ -570,23 +631,30 @@ function position(d) {
 
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
-function brush() {    
+function brush() {
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
-        extents = actives.map(function (p) { return yscale[p].brush.extent(); });  
+        extents = actives.map(function (p) { return yscale[p].brush.extent(); });
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
         .forEach(function (element, i) {
             var dimension = d3.select(element).data()[0];
             if (_.include(actives, dimension)) {
-                var extent = extents[actives.indexOf(dimension)];
+                var extentArr = extents[actives.indexOf(dimension)];
+                var extent = [];
+                extentArr.map(function (a) {
+                    a.map(function (b) {
+                        extent.push(b);
+                    })
+                });
+
                 d3.select(element)
                     .selectAll('text')
                     .style('font-weight', 'bold')
                     .style('font-size', '13px')
                     .style('display', function () {
-                        var value = d3.select(this).data();                        
+                        var value = d3.select(this).data();
                         return extent[0] <= value && value <= extent[1] ? null : "none"
                     });
             } else {
@@ -600,7 +668,7 @@ function brush() {
                 .selectAll('.label')
                 .style('display', null);
         });
-    ;
+
 
     // bold dimensions with label
     d3.selectAll('.label')
@@ -615,12 +683,25 @@ function brush() {
         .filter(function (d) {
             return !_.contains(excluded_groups, d.group);
         })
-        .map(function (d) {        
-            return actives.every(function (p, dimension) {
-                return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1];
+        .map(function (d) {
+            return actives.every(function (p, i) {
+                return extents[i].some(function (e) {
+                    return e[0] <= d[p] && d[p] <= e[1];
+                })
             }) ? selected.push(d) : null;
         });
 
+
+    //Check if there any rects/extents in Axis
+    var activeBrushes;
+    var extentRects = d3.selectAll(".extent");
+    var activeBrushes = extentRects[0].some(function (d) {
+        return d.attributes.height.value > 0;
+    });
+    
+    if (!activeBrushes) selected = data;
+
+    //Check tableSelections
     if (tableSelect.length > 0) {
         selected = tableSelect
     }
@@ -692,13 +773,15 @@ function paths(selected, ctx, count) {
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
     // update brushes
+    debugger;
     if (d) {
         var brush_el = d3.selectAll(".brush")
             .filter(function (key) { return key == d; });
         // single tick
         if (extent) {
             // restore previous extent
-            brush_el.call(yscale[d].brush = d3.svg.brush().y(yscale[d]).extent(extent).on("brush", brush));
+            debugger;
+            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));            
         } else {
             brush_el.call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush));
         }
@@ -950,7 +1033,7 @@ function bPath(d) {
     
     if (bColor) ctx.strokeStyle = bColor;
     ctx.beginPath();
-    var x0 = xscale(0) - 15,
+    var x0 = xscale(dimensions[0]) - 15,
         y0 = yscale[dimensions[0]](d[dimensions[0]]);   // left edge
     ctx.moveTo(x0, y0);
     dimensions.map(function (p, i) {
@@ -968,13 +1051,13 @@ function bPath(d) {
     ctx.stroke();
 }   
 
-function drawTable(selected, data) {
+function drawTable(selected, data) {  
 
     data.sort(function (a, b) {
         if (containsObject(a, selected) && !(containsObject(b, selected))) { return -1 }
         else if (containsObject(a, selected) && containsObject(b, selected)) { return 0; }
-        else if (!(containsObject(a, selected)) && (containsObject(b, selected))) { return 1;}
-    });
+        else if (!(containsObject(a, selected)) && (containsObject(b, selected))) { return 1; }
+    });   
 
     //Remove Existing Table
     d3.select("#table div").remove();
@@ -982,10 +1065,10 @@ function drawTable(selected, data) {
     //Table   
     var column_names = Object.keys(data[0]);
 
-     //Record sort clicks
+    //Record sort clicks
     var headerClicks = {};
     column_names.map(function (a) { headerClicks[a] = 0; });
-   
+
     // draw the table
     d3.selectAll("#table").append("div")
         .attr("id", "container")
@@ -1009,18 +1092,18 @@ function drawTable(selected, data) {
     var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
 
     // draw table body with rows
-    table.append("tbody")
+    var tableBody = table.append("tbody")
 
     // data bind
-    rows = table.selectAll("tbody").selectAll("tr")
-        .data(data, function (d) { return d.id; });
+    rows = tableBody.selectAll("tr")
+        .data(data);
 
     // enter the rows
     rows.enter()
         .append("tr")
         .attr("class", function (d) {
             if (containsObject(d, selected)) return "selected";
-            else return "notSelected";            
+            else return "notSelected";
         })
 
     // enter td's in each row
@@ -1033,12 +1116,13 @@ function drawTable(selected, data) {
                 }
             }
             return arr;
-        })
+            })
         .enter()
         .append("td")
+        .text(function (d) { return d; });
 
     rows
-        .on("click", function (d) {         
+        .on("click", function (d) {
             if (containsObject(d, tableSelect)) {
                 //deselect
                 let index = tableSelect.indexOf(d);
@@ -1049,11 +1133,8 @@ function drawTable(selected, data) {
                 //select     
                 tableSelect.push(d);
                 brush();
-            }            
-        });
-
-    row_entries_no_anchor = row_entries;
-    row_entries_no_anchor.text(function (d) { return d; });   
+            }
+        });    
 
     /**  sort functionality **/
     headers
@@ -1116,4 +1197,10 @@ function drawTable(selected, data) {
             }
 
         });
+}
+
+function resizeExtent(selection) {    
+    selection
+        .attr("x", -8)
+        .attr("width", 16);
 }
