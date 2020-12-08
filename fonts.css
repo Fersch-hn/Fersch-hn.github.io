@@ -1,0 +1,13 @@
+@font-face {
+    font-family: BarlowBold;
+    src: url('./fonts/Barlow-Bold.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: RobotoBold;
+    src: url('./fonts/Roboto-Bold.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
