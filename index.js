@@ -35,6 +35,7 @@ var colors = {
 
 // handle upload button
 function upload_button(el, callback) {
+    
     var uploader = document.getElementById(el);
     var reader = new FileReader();
 
@@ -99,6 +100,12 @@ var svg = d3.select("svg")
 
 // Load the data and visualization
 function load_dataset(fileData) {
+
+    //Remove Existing Axes
+    console.log(d3.select(".dimension"));
+
+    d3.selectAll(".dimension").remove();
+
     var raw_data = d3.csv.parse(fileData);
 
     // Convert quantitative scales to floats
@@ -401,7 +408,7 @@ function load_dataset(fileData) {
     legend = create_legend(colors, brush);    
 
     //Add Background Lines
-    background = svg.append("g")
+    backgroundLines = svg.append("g")
         .attr("class", "background")
         .selectAll("path")
         .data(data) 
@@ -591,26 +598,22 @@ function path(d, ctx, color) {
 */
 
 function path(d, ctx, color) {
-    console.log(d);
-    debugger;
+
     if (color) ctx.strokeStyle = color;
     ctx.beginPath();
     var x0 = xscale(dimensions[0]) - 15,
         y0 = yscale[dimensions[0]](d[dimensions[0]]);   // left edge
-    console.log(xscale(0));
 
     ctx.moveTo(x0, y0);
     dimensions.map(function (p, i) {
         var x = xscale(p),
             y = yscale[p](d[p]);
-        var cp1x = x - 0.88 * (x - x0);
-        var cp1y = y0;
 
-        console.log(x, x0);
-        console.log(cp1x);
+        var cp1x = x - 0.88 * (x - x0);
+        var cp1y = y0;      
         var cp2x = x - 0.12 * (x - x0);
         var cp2y = y;
-        console.log(cp2x);
+
         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
         x0 = x;
         y0 = y;
