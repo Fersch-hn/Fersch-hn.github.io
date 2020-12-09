@@ -80,10 +80,6 @@ canvas, svg {
     fill: none;
 }
 
-.axis .label{
-    font-family: RobotoBold;
-}
-
 .axis line, .axis path {
     fill: none;
     stroke: #777;
@@ -106,9 +102,11 @@ canvas, svg {
 }
 
     .axis text.label {
-        font-size: 12px;
         cursor: move;
         padding-bottom: 24px;
+        font-family: RobotoBold;
+        font-size: 17px;
+        color: #4e4f4f;
     }
 
 .dark .axis text {
