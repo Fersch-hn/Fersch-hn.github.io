@@ -281,7 +281,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'magnitude')
         .attr('y', -30)
         .attr('x', 0)
         .text((d) => {

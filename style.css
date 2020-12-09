@@ -106,8 +106,14 @@ canvas, svg {
         padding-bottom: 24px;
         font-family: RobotoBold;
         font-size: 17px;
-        color: #4e4f4f;
+        fill: #4e4f4f;
     }
+
+.magnitude {
+    font-family: RobotoRegular;
+    font-size: 15px;
+    fill: #969696;
+}
 
 .dark .axis text {
     fill: #f2f2f2;
