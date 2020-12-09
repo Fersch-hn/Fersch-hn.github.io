@@ -94,13 +94,16 @@ canvas, svg {
     width: 200px;
 }
 
+/*Tick Text Style*/
 .axis text {
-    fill: #111;
-    text-anchor: right;
-    font-size: 11px;
+    fill: #58595b;
+    font-family: RobotoMedium;
+    font-size: 15px;
+    text-anchor: right;   
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
 
+/*axis Lable*/
     .axis text.label {
         cursor: move;
         padding-bottom: 24px;
