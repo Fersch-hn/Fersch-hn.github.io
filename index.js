@@ -25,7 +25,8 @@ var m = [110, 0, 20, 0],
     brush_count = 0,
     excluded_groups = [],
     tableSelect = [],
-    myColor;
+    myColor,
+    lastAxis;
 
 //HSL
 var colors = {
@@ -294,7 +295,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'target-value font-RR15 fill7')
         .attr('y', -10)
         .attr('x', 0)
         .text((d) => {
@@ -307,7 +308,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'target-label font-RB17 fill3')
         .attr('y', -10)
         .attr('x', -40)
         .text((d) => {
@@ -356,17 +357,21 @@ function load_dataset(fileData) {
         .enter().append("path")
         .attr("d", bPath);
 
-    console.log(data);
-    var numbers = [];
+    let lastAxisValues = [];
+
+    //Reference Axis for coloring order
+    lastAxis = dimensions[dimensions.length - 1];   
     data.map(function (d) {       
-        numbers.push(d.GHGI);
+        lastAxisValues.push(d[lastAxis]);
     });
-    console.log(numbers);
-    var min = Math.min(...numbers),
-        max = Math.max(...numbers);
-    console.log(min, max);
-    myColor = d3.scaleSequential().domain([min, max])
-        .interpolator(d3.interpolateViridis);
+
+   //Get Range
+    let min = Math.min(...lastAxisValues),
+        max = Math.max(...lastAxisValues);
+
+    //Scale Colors
+    myColor = d3.scaleSequential().domain([max, min])
+        .interpolator(d3.interpolateViridis);    
 
     // Render full foreground
     brush();
@@ -439,9 +444,8 @@ function create_legend(colors, brush) {
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
     
-    selection.slice(i, max).forEach(function (d) {    
-        console.log(myColor(d), d.GHGI);    
-        path(d, ctx, myColor(d.GHGI));
+    selection.slice(i, max).forEach(function (d) {
+        path(d, ctx, myColor(d[lastAxis]));
     });
 };
 
