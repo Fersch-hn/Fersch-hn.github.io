@@ -253,14 +253,14 @@ function load_dataset(fileData) {
         })
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'group-label font-BB17 fill2 spacing1')
         .attr('y', -80)
         .attr('x', 0)
         .text(String);
 
     // Add an axis and title.
     g.append("svg:g")
-        .attr("class", "axis")
+        .attr("class", "axis font-RM15 fill4")
         .attr("transform", "translate(0,0)")
         .each(function (d) {
             d3.select(this).call(axis.scale(yscale[d]));
@@ -270,7 +270,7 @@ function load_dataset(fileData) {
         //Change Label Spacing.
         .attr("y", -50)
         .attr("x", 0)
-        .attr("class", "label")
+        .attr("class", "label font-RB17 fill3")
         .text(String)
         .append("title")
         .text("Click to invert. Drag to reorder");
@@ -281,7 +281,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'magnitude')
+        .attr('class', 'magnitude font-RR15 fill7')
         .attr('y', -30)
         .attr('x', 0)
         .text((d) => {
@@ -1000,10 +1000,11 @@ function drawTable(selected, data) {
     var table = d3.selectAll("#FilterableTable").append("table");
     table.append("thead").append("tr");
 
-    var headers = table.selectAll("tr").selectAll("th")
+    var headers = table.selectAll("tr").selectAll("th")       
         .data(column_names)
         .enter()
         .append("th")
+        .attr("class", "font-RB17 fill3")
         .text(function (d) { return d; });
 
     var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
@@ -1036,6 +1037,7 @@ function drawTable(selected, data) {
         })
         .enter()
         .append("td")
+        .attr("class", "font-RR17 fill7")
 
     rows
         .on("click", function (d) {         

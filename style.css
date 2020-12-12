@@ -95,10 +95,7 @@ canvas, svg {
 }
 
 /*Tick Text Style*/
-.axis text {
-    fill: #58595b;
-    font-family: RobotoMedium;
-    font-size: 15px;
+.axis text {   
     text-anchor: right;   
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
@@ -106,17 +103,8 @@ canvas, svg {
 /*axis Lable*/
     .axis text.label {
         cursor: move;
-        padding-bottom: 24px;
-        font-family: RobotoBold;
-        font-size: 17px;
-        fill: #4e4f4f;
+        padding-bottom: 24px;       
     }
-
-.magnitude {
-    font-family: RobotoRegular;
-    font-size: 15px;
-    fill: #969696;
-}
 
 .dark .axis text {
     fill: #f2f2f2;
@@ -392,6 +380,12 @@ table {
     fill: #5e676d;
 }
 
-.fill6 {
+.fill7 {
     fill: #969696;
+}
+
+/*Letter Spacing*/
+
+.spacing1{
+    letter-spacing: 2px;
 }
