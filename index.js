@@ -24,7 +24,8 @@ var m = [110, 0, 20, 0],
     render_speed = 50,
     brush_count = 0,
     excluded_groups = [],
-    tableSelect = [];
+    tableSelect = [],
+    myColor;
 
 //HSL
 var colors = {
@@ -355,6 +356,18 @@ function load_dataset(fileData) {
         .enter().append("path")
         .attr("d", bPath);
 
+    console.log(data);
+    var numbers = [];
+    data.map(function (d) {       
+        numbers.push(d.GHGI);
+    });
+    console.log(numbers);
+    var min = Math.min(...numbers),
+        max = Math.max(...numbers);
+    console.log(min, max);
+    myColor = d3.scaleSequential().domain([min, max])
+        .interpolator(d3.interpolateViridis);
+
     // Render full foreground
     brush();
 };
@@ -426,8 +439,9 @@ function create_legend(colors, brush) {
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
     
-    selection.slice(i, max).forEach(function (d) {        
-        path(d, ctx, color("test", opacity));
+    selection.slice(i, max).forEach(function (d) {    
+        console.log(myColor(d), d.GHGI);    
+        path(d, ctx, myColor(d.GHGI));
     });
 };
 
