@@ -370,8 +370,19 @@ function load_dataset(fileData) {
         max = Math.max(...lastAxisValues);
 
     //Scale Colors
+    x0 = d3.scaleQuantize()
+        .domain([max, min])
+        .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
+
     myColor = d3.scaleSequential().domain([max, min])
-        .interpolator(d3.interpolateViridis);    
+        .interpolator(d3.interpolateRgbBasis(x0.range()));    
+
+  
+    //myColor = d3.scaleSequential().domain([min, max])
+    //    .interpolator(d3.interpolateViridis);    
+   
+
+    console.log();
 
     // Render full foreground
     brush();
