@@ -246,25 +246,7 @@ function load_dataset(fileData) {
     });
 
     var groupedColumns = [{ key: "Input", values: inputs },
-    { key: "Output", values: outputs }];
-
-    var labelPlace = getLabelPlacing(groupedColumns);
-    var dataIO = ["Input", "Output"];
-
-    // Add a group element for each input output.   
-    svg.selectAll(".dimensionIO")
-        .data(dataIO)
-        .enter().append("svg:g")
-        .attr("class", "dimensionIO")
-        .attr("transform", function (d) {
-            return "translate( " + labelPlace[d] + " )";
-        })
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'group-label font-BB17 fill2 spacing1')
-        .attr('y', -80)
-        .attr('x', 0)
-        .text(String);
+    { key: "Output", values: outputs }];   
 
     // Add an axis and title.
     g.append("svg:g")
@@ -400,6 +382,7 @@ function load_dataset(fileData) {
     myColor = d3.scaleSequential().domain([max, min])
         .interpolator(d3.interpolateRgbBasis(x0.range()));  
 
+    //Box shadows
     var defs = svg.append("defs");
 
     var filter = defs.append("filter")
@@ -421,137 +404,6 @@ function load_dataset(fileData) {
         .attr("in", "offsetBlur")
     feMerge.append("feMergeNode")
         .attr("in", "SourceGraphic");
-
-
-    //var defs = svg.append('defs');
-
-
-    //var filter = defs.append('filter')
-    //    .attr('id', 'drop-shadow')
-    //    .attr('height', '130%');
-
-    //filter.append('feGaussianBlur')
-    //    .attr('in', 'SourceAlpha')
-    //    .attr('stdDeviation', 5)
-    //    .attr('result', 'blur');
-
-    //filter.append('feOffset')
-    //    .attr('in', 'blur')
-    //    .attr('dx', 5)
-    //    .attr('dy', 5)
-    //    .attr('result', 'offsetBlur');
-
-    //var feMerge = filter.append('feMerge');
-
-    //feMerge.append('feMergeNode')
-    //    .attr('in', 'offsetBlur')
-    //feMerge.append('feMergeNode')
-    //    .attr('in', 'SourceGraphic');
-
-
-
-    //var defs = svg.append("defs");
-
-    //// create filter with id #drop-shadow
-    //// height=130% so that the shadow is not clipped
-    //var filter = defs.append("filter")
-    //    .attr("id", "drop-shadow")
-    //    .attr("height", "130%");
-
-    //// SourceAlpha refers to opacity of graphic that this filter will be applied to
-    //// convolve that with a Gaussian with standard deviation 3 and store result
-    //// in blur
-    //filter.append("feGaussianBlur")
-    //    .attr("in", "SourceAlpha")
-    //    .attr("stdDeviation", 5)
-    //    .attr("result", "blur");
-
-    //// translate output of Gaussian blur to the right and downwards with 2px
-    //// store result in offsetBlur
-    //filter.append("feOffset")
-    //    .attr("in", "blur")
-    //    .attr("dx", 5)
-    //    .attr("dy", 5)
-    //    .attr("result", "offsetBlur");
-
-    //// overlay original SourceGraphic over translated blurred opacity by using
-    //// feMerge filter. Order of specifying inputs is important!
-    //var feMerge = filter.append("feMerge");
-
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "offsetBlur")
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "SourceGraphic");
-
-
-    //var defs = svg.append("defs");
-
-    ////Code taken from http://stackoverflow.com/questions/9630008/how-can-i-create-a-glow-around-a-rectangle-with-svg
-    ////Filter for the outside glow
-    //var filter = defs.append("filter")
-    //    .attr("id", "glow");
-
-    //filter.append("feGaussianBlur")
-    //    .attr("class", "blur")
-    //    .attr("stdDeviation", "5")
-    //    .attr("result", "coloredBlur");
-
-    //var feMerge = filter.append("feMerge");
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "coloredBlur");
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "SourceGraphic");
-
-
-    ////Container for the gradients
-    //var defs = svg.append("defs");
-
-    ////Filter for the outside glow
-    //var filter = defs.append("filter")
-    //    .attr("id", "glow");
-    //filter.append("feGaussianBlur")
-    //    .attr("stdDeviation", "4")
-    //    .attr("result", "coloredBlur");
-    //var feMerge = filter.append("feMerge");
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "coloredBlur");
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "SourceGraphic");
-
-
-
-    //var defs = svg.append("defs");
-
-    //var filter = defs.append("filter")
-    //    .attr("id", "dropshadow")
-
-    //filter.append("feGaussianBlur")
-    //    .attr("in", "SourceAlpha")
-    //    .attr("stdDeviation", 4)
-    //    .attr("result", "blur");
-    //filter.append("feOffset")
-    //    .attr("in", "blur")
-    //    .attr("dx", 2)
-    //    .attr("dy", 2)
-    //    .attr("result", "offsetBlur")
-    //filter.append("feFlood")
-    //    .attr("in", "offsetBlur")
-    //    .attr("flood-color", "#737373")
-    //    .attr("flood-opacity", "0.5")
-    //    .attr("result", "offsetColor");
-    //filter.append("feComposite")
-    //    .attr("in", "offsetColor")
-    //    .attr("in2", "offsetBlur")
-    //    .attr("operator", "in")
-    //    .attr("result", "offsetBlur");
-
-    //var feMerge = filter.append("feMerge");
-
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "offsetBlur")
-    //feMerge.append("feMergeNode")
-    //    .attr("in", "SourceGraphic");
-    
 
     // Render full foreground
     brush();
@@ -775,16 +627,24 @@ function brush() {
 
     //Group Axis for every box and Draw Box
     let groupIO = [];
-    
+    let labels = [];
     for (i = 0; i < IO.length; i++) {
-        groupIO.push(dimensions[i]);
+        groupIO.push(dimensions[i]);      
         if (IO[i + 1] !== IO[i]) {
-            groupedIO.push(groupIO);
+            groupedIO.push(groupIO);    
+
+            if (IO[i] === 0) {
+                labels.push("INPUT");
+            }
+            else if (IO[i] === 1 ) {
+                labels.push("OUTPUT");
+            }
+
             groupIO = [];
         };
     }
 
-    drawBox(groupedIO);
+    drawBox(groupedIO, labels);
 
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
@@ -1127,27 +987,6 @@ function search(selection, str) {
     return _(selection).filter(function (d) { return pattern.exec(d.name); });
 }
 
-//Place IOLabels
-function getLabelPlacing(groupedColumns) {
-
-    var inputLength = groupedColumns[0].values.length;
-    var lastInput = groupedColumns[0].values[inputLength - 1];
-    var firstInput = groupedColumns[0].values[0];
-
-    var centerInput = (xscale(lastInput) - xscale(firstInput)) / 2;
-
-    var outputLength = groupedColumns[1].values.length;
-    var lastOutput = groupedColumns[1].values[outputLength - 1];
-    var firstOutput = groupedColumns[1].values[0];
-
-    var centerOutput = (xscale(lastOutput) - xscale(firstOutput)) / 2;
-
-    var placeInput = xscale(firstInput) + centerInput;
-    var placeOutput = xscale(firstOutput) + centerOutput;
-
-    return { "Input": placeInput, "Output": placeOutput };
-}
-
 function containsObject(obj, list) {
     var i;
     for (i = 0; i < list.length; i++) {
@@ -1335,7 +1174,7 @@ function drawTable(selected, data) {
         });
 }
 
-function drawBox(groupedIO) { 
+function drawBox(groupedIO, labels) {  
 
     groupedIO.map(function (group, idx) {
         let firstAxis = group[0].replace(/ /g, "_");
@@ -1344,31 +1183,45 @@ function drawBox(groupedIO) {
         positionFirstAxis = d3.select("." + firstAxis).node().getBBox();
         positionLastAxis = d3.select("." + lastAxis).node().getBBox();
 
-        let extraWidth = 0;
+        //Calc Width
         let width;
         if (groupedIO[idx + 1] !== undefined) {
-            //extraWidth = xscale(groupedIO[idx + 1][0]) - xscale(group[group.length - 1]);
-            width = (xscale(groupedIO[idx + 1][0]) - xscale(group[0])) - ((xscale(groupedIO[idx + 1][0]) -  xscale(group[group.length - 1])) / 4);
-            //console.log(xscale(groupedIO[idx + 1][0]) - xscale(group[0]), xscale(group[group.length - 1]) - xscale(groupedIO[idx + 1][0]));
-            console.log(width);
+            width = (xscale(groupedIO[idx + 1][0]) - xscale(group[0])) - ((xscale(groupedIO[idx + 1][0]) -  xscale(group[group.length - 1])) / 4);           
         }
         else {
-            width = xscale(group[group.length - 1]) - xscale(group[0]) + (xscale(group[1]) - xscale(group[0])) / 1.5  /*+ positionFirstAxis.width / 2  - 5*/ /*+ ( (xscale(group[1]) - xscale(group[0])) / 2)*/;
-        }    
-
-        
-
+            width = xscale(group[group.length - 1]) - xscale(group[0]) + (xscale(group[1]) - xscale(group[0])) / 1.5;
+        }   
         
         d3.select("g")
             .append("rect")
             .attr("class", "box")
-                .attr("x", xscale(group[0]) - (xscale(group[1]) - xscale(group[0])) / 3 - 2 )
+                .attr("x", xscale(group[0]) - (xscale(group[1]) - xscale(group[0])) / 3 - 7 )
             .attr("y", positionFirstAxis.y - 35)
-            .attr("width", width)
+            .attr("width", width + 7)
             .attr("height", positionFirstAxis.height + 45)
             .attr("stroke", "#8f8f8f")
             .attr("stroke-width", "0.2")
             .attr("fill", "none")            
-                .attr("filter", "url(#dropshadow)");     
+            .attr("filter", "url(#dropshadow)");                
     });   
+
+    // Add a group element for each input output.   
+    svg.selectAll(".dimensionIO")
+        .data(labels)
+        .enter().append("svg:g")
+        .attr("class", "dimensionIO")
+        .attr("transform", function (d, i) {
+            let groupLabel = groupedIO[i];
+            let position = (xscale(groupLabel[groupLabel.length - 1]) - xscale(groupLabel[0])) / 2 + xscale(groupLabel[0]);
+
+            return "translate( " + position + " )";
+        })
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'group-label font-BB17 fill2 spacing1')
+        .attr('y', -80)
+        .attr('x', 0)
+        .text(String); 
+
+
 }
