@@ -303,38 +303,7 @@ function load_dataset(fileData) {
             let obj = magnitudes.find(m => m.name === d);
             if (!(obj.target === null)) { firstTarget++ }
             if (firstTarget === 2) { return "Target: " }
-        });
-
-    //let previousAxis;
-    //g.append("line")
-    //    .style("stroke", function (d) {
-    //        console.log(d);
-    //        let idx = dimensions.indexOf(d);
-    //        console.log(idx);
-    //        if (previousAxis === null || IO[idx] === 0 ) { return "grey"}
-    //        /*debugger*/;
-    //    })
-    //    .attr("x1", -65)
-    //    .attr("y1", -80)
-    //    .attr("x2", -65)
-    //    .attr("y2", 130)
-       
-    //    .style("fill", "red")
-    //    .style("stroke-width", 4);
-
-    //var firstOutput = 1;
-    //g.append("line")
-    //    .attr("x1", -65)
-    //    .attr("y1", -80)
-    //    .attr("x2", -65)
-    //    .attr("y2", 130)
-    //    .style("stroke", function (d) {
-    //        let obj = magnitudes.find(m => m.name === d);
-    //        if (!(obj.io === "Input")) { firstOutput++ }
-    //        if (firstOutput === 2) { return "grey"; }
-    //    })
-    //    .style("fill", "red")
-    //    .style("stroke-width", 4);
+        });    
 
     // Add and store a brush for each axis.
     g.append("svg:g")
@@ -370,17 +339,27 @@ function load_dataset(fileData) {
         lastAxisValues.push(d[lastAxis]);
     });
 
-   //Get Range
-    let min = Math.min(...lastAxisValues),
-        max = Math.max(...lastAxisValues);
+    //Scale if numerical or ordinal
+    if (_.isNumber(lastAxisValues[0])) {
 
-    //Scale Colors
-    x0 = d3.scaleQuantize()
-        .domain([max, min])
-        .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
+        //Get Range
+        let min = Math.min(...lastAxisValues),
+            max = Math.max(...lastAxisValues);
 
-    myColor = d3.scaleSequential().domain([max, min])
-        .interpolator(d3.interpolateRgbBasis(x0.range()));  
+        //Scale Colors
+        x0 = d3.scaleQuantize()
+            .domain([max, min])
+            .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
+
+        myColor = d3.scaleSequential().domain([max, min])
+            .interpolator(d3.interpolateRgbBasis(x0.range()));  
+    }
+    else {
+        lastAxisValues.sort();
+      
+        myColor = d3.scaleOrdinal().domain(lastAxisValues)
+            .range(["#98c11d", "#0c74bb",  "#33735f", "#0c3c5e", "#032135"]);
+    } 
 
     //Box shadows
     var defs = svg.append("defs");
