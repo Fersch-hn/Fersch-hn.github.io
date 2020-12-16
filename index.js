@@ -28,7 +28,8 @@ var m = [110, 0, 20, 0],
     myColor,
     lastAxis,
     IO = [],
-    groupedIO = [];
+    groupedIO = [],
+    highlightSelected = false;
 
 //HSL
 var colors = {
@@ -221,6 +222,7 @@ function load_dataset(fileData) {
 
                 // rerender
                 d3.select("#foreground").style("opacity", null);
+                highlightSelected = true;
                 brush();
                 delete this.__dragged__;
                 delete this.__origin__;
