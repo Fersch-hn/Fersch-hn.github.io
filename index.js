@@ -604,7 +604,7 @@ function position(d) {
 function brush() {    
 
     //Remove existing Boxes
-    d3.selectAll(".box").remove();
+   d3.selectAll(".box").remove();    
 
     //Group Axis for every box and Draw Box
     let groupIO = [];
@@ -626,6 +626,7 @@ function brush() {
     }
 
     drawBox(groupedIO, labels);
+    groupedIO = [];
 
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
@@ -1155,8 +1156,8 @@ function drawTable(selected, data) {
         });
 }
 
-function drawBox(groupedIO, labels) {  
-
+function drawBox(groupedIO, labels) { 
+    
     groupedIO.map(function (group, idx) {
         let firstAxis = group[0].replace(/ /g, "_");
         let lastAxis = group[group.length - 1].replace(/ /g, "_");
@@ -1165,14 +1166,15 @@ function drawBox(groupedIO, labels) {
         positionLastAxis = d3.select("." + lastAxis).node().getBBox();
 
         //Calc Width
-        let width;
+        let width = 0;
+        
         if (groupedIO[idx + 1] !== undefined) {
-            width = (xscale(groupedIO[idx + 1][0]) - xscale(group[0])) - ((xscale(groupedIO[idx + 1][0]) -  xscale(group[group.length - 1])) / 4);           
+            width = (xscale(groupedIO[idx + 1][0]) - xscale(group[0])) - ((xscale(groupedIO[idx + 1][0]) - xscale(group[group.length - 1])) / 4);           
         }
         else {
             width = xscale(group[group.length - 1]) - xscale(group[0]) + (xscale(group[1]) - xscale(group[0])) / 1.5;
-        }   
-        
+        }  
+                
         d3.select("g")
             .append("rect")
             .attr("class", "box")
@@ -1184,7 +1186,7 @@ function drawBox(groupedIO, labels) {
             .attr("stroke-width", "0.2")
             .attr("fill", "none")            
             .attr("filter", "url(#dropshadow)");                
-    });   
+    });       
 
     // Add a group element for each input output.   
     svg.selectAll(".dimensionIO")
@@ -1202,7 +1204,5 @@ function drawBox(groupedIO, labels) {
         .attr('class', 'group-label font-BB17 fill2 spacing1')
         .attr('y', -80)
         .attr('x', 0)
-        .text(String); 
-
-
+        .text(String);    
 }
