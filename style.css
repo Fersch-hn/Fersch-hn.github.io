@@ -9,7 +9,7 @@ body {
     font-family: Ubuntu, Tahoma, Helvetica, sans-serif;
     font-size: 12px;
     line-height: 1.4em;
-    background: #f7f7f7;
+    background: #fdfdfd;
     color: #404040;
 }
 
@@ -94,17 +94,16 @@ canvas, svg {
     width: 200px;
 }
 
-.axis text {
-    fill: #111;
-    text-anchor: right;
-    font-size: 11px;
+/*Tick Text Style*/
+.axis text {   
+    text-anchor: right;   
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
 
+/*axis Lable*/
     .axis text.label {
-        font-size: 12px;
         cursor: move;
-        padding-bottom: 24px;
+        padding-bottom: 24px;       
     }
 
 .dark .axis text {
@@ -312,4 +311,181 @@ table {
 
 .selected{
     background-color: cornflowerblue;
+}
+
+/*Fonts*/
+.font-BB17 {
+    font-family: BarlowBold;
+    font-size: 17px;
+}
+
+.font-RB41 {
+    font-family: RobotoBold;
+    font-size: 41px;
+}
+
+.font-RB17 {
+    font-family: RobotoBold;
+    font-size: 17px;
+}
+
+.font-RR22 {
+    font-family: RobotoRegular;
+    font-size: 22px;
+}
+
+.font-RR17 {
+    font-family: RobotoRegular;
+    font-size: 17px;
+}
+
+.font-RR15 {
+    font-family: RobotoRegular;
+    font-size: 15px;
+}
+
+.font-RM15 {
+    font-family: RobotoMedium;
+    font-size: 15px;
+}
+
+.font-RL17 {
+    font-family: RobotoLight;
+    font-size: 17px;
+}
+
+/*Font fills*/
+/*1= Darker, 7 = lighter*/
+.fill1 {
+    fill: #04293f;
+}
+
+.fill2 {
+    fill: #333333;
+}
+
+.fill3 {
+    fill: #4e4f4f;
+}
+
+.fill4 {
+    fill: #58595b;
+}
+
+.fill5 {
+    fill: #5e676d;
+}
+
+.fill6 {
+    fill: #5e676d;
+}
+
+.fill7 {
+    fill: #969696;
+}
+
+/*Letter Spacing*/
+
+.spacing1{
+    letter-spacing: 2px;
+}
+
+
+
+
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+/* Zebra striping */
+tr:nth-of-type(odd) {
+    background: #fdfdfd;
+}
+
+tr:nth-of-type(even) {
+    background: #fafafa;
+}
+
+th {
+    background: #fdfdfd;   
+    cursor: s-resize;
+    background-repeat: no-repeat;
+    background-position: 3% center;
+}
+
+td, th {
+    padding: 6px;
+    border: 1px solid #efefef;
+    text-align: center;
+}   
+
+/* 
+	Max width before this PARTICULAR table gets nasty
+	This query will take effect for any screen smaller than 760px
+	and also iPads specifically.
+	*/
+@media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
+
+    /* Force table to not be like tables anymore */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+        /* Hide table headers (but not display: none;, for accessibility) */
+        thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+    tr {
+        border: 1px solid #efefef;
+    }
+
+    td {
+        /* Behave  like a "row" */
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+    }
+
+        td:before {
+            /* Now like a table header */
+            position: absolute;
+            /* Top/left values mimic padding */
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+        }
+
+        /*
+		Label the data
+		*/
+        td:before {
+            content: attr(data-th) ": ";
+            font-weight: bold;
+            width: 6.5em;
+            display: inline-block;
+        }
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    body {
+        padding: 0;
+        margin: 0;
+        width: 320px;
+    }
+}
+
+/* iPads (portrait and landscape) ----------- */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+    body {
+        width: 495px;
+    }
 }

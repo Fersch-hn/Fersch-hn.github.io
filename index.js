@@ -25,6 +25,12 @@ var m = [110, 0, 20, 0],
     brush_count = 0,
     excluded_groups = [],
     tableSelect = [],
+    myColor,
+    lastAxis,
+    IO = [],
+    groupedIO = [],
+    highlightSelected = false;
+    tableSelect = [],
     brushing = false;
 
 //HSL
@@ -93,9 +99,7 @@ var svg = d3.select("svg")
     .attr("width", w + m[1] + m[3])
     .attr("height", h + m[0] + m[2])
     .append("svg:g")
-    .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
-    //Border SVG
-    .attr("style", "outline: thin solid black; outline-offset: 5px;")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")")    
 
 
 // Load the data and visualization
@@ -144,7 +148,7 @@ function load_dataset(fileData) {
             magnitudeObject.target = null;
         }
         magnitudes.push(magnitudeObject);
-    }
+    }  
 
     //Create Data with clean key names
     var newData = [];
@@ -181,7 +185,7 @@ function load_dataset(fileData) {
     var g = svg.selectAll(".dimension")
         .data(dimensions)
         .enter().append("svg:g")
-        .attr("class", "dimension")
+        .attr("class", function (d) { return "dimension " + d.replace(/ /g, "_") })      
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
             .on("dragstart", function (d) {
@@ -231,14 +235,20 @@ function load_dataset(fileData) {
                     xscale.domain(dimensions);
                     update_ticks(d, extent);
 
-                    // rerender
-                    d3.select("#foreground").style("opacity", null);
-                    brush();
-                    delete this.__dragged__;
-                    delete this.__origin__;
-                    delete dragging[d];
-                }
+                // rerender
+                d3.select("#foreground").style("opacity", null);
+                highlightSelected = true;
+                brush();
+                delete this.__dragged__;
+                delete this.__origin__;
+                delete dragging[d];
             }))
+
+    //Get IO Order   
+    magnitudes.map(function (d) {
+        if (d.io === "Input") IO.push(0);
+        else if (d.io === "Output") IO.push(1);
+    });   
 
     //Group for Inputs and Outputs
     var columnKeys = Object.keys(data[0]);
@@ -253,29 +263,11 @@ function load_dataset(fileData) {
     });
 
     var groupedColumns = [{ key: "Input", values: inputs },
-    { key: "Output", values: outputs }];
-
-    var labelPlace = getLabelPlacing(groupedColumns);
-    var dataIO = ["Input", "Output"];
-
-    // Add a group element for each input output.   
-    svg.selectAll(".dimensionIO")
-        .data(dataIO)
-        .enter().append("svg:g")
-        .attr("class", "dimensionIO")
-        .attr("transform", function (d) {
-            return "translate( " + labelPlace[d] + " )";
-        })
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
-        .attr('y', -80)
-        .attr('x', 0)
-        .text(String);
+    { key: "Output", values: outputs }];   
 
     // Add an axis and title.
     g.append("svg:g")
-        .attr("class", "axis")
+        .attr("class", "axis font-RM15 fill4")
         .attr("transform", "translate(0,0)")
         .each(function (d) {
             d3.select(this).call(axis.scale(yscale[d]));
@@ -285,7 +277,7 @@ function load_dataset(fileData) {
         //Change Label Spacing.
         .attr("y", -50)
         .attr("x", 0)
-        .attr("class", "label")
+        .attr("class", "label font-RB17 fill3")
         .text(String)
         .append("title")
         .text("Click to invert. Drag to reorder");
@@ -296,7 +288,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'magnitude font-RR15 fill7')
         .attr('y', -30)
         .attr('x', 0)
         .text((d) => {
@@ -308,7 +300,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'target-value font-RR15 fill7')
         .attr('y', -10)
         .attr('x', 0)
         .text((d) => {
@@ -321,28 +313,14 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'axis-label')
+        .attr('class', 'target-label font-RB17 fill3')
         .attr('y', -10)
         .attr('x', -40)
         .text((d) => {
             let obj = magnitudes.find(m => m.name === d);
             if (!(obj.target === null)) { firstTarget++ }
             if (firstTarget === 2) { return "Target: " }
-        });
-
-    var firstOutput = 1;
-    g.append("line")
-        .attr("x1", -65)
-        .attr("y1", -80)
-        .attr("x2", -65)
-        .attr("y2", 130)
-        .style("stroke", function (d) {
-            let obj = magnitudes.find(m => m.name === d);
-            if (!(obj.io === "Input")) { firstOutput++ }
-            if (firstOutput === 2) { return "grey"; }
-        })
-        .style("fill", "red")
-        .style("stroke-width", 4);
+        });    
 
     // Add and store a brush for each axis.
     //g.append("svg:g")
@@ -415,6 +393,59 @@ function load_dataset(fileData) {
         .enter().append("path")
         .attr("d", bPath);
 
+    let lastAxisValues = [];
+
+    //Reference Axis for coloring order
+    lastAxis = dimensions[dimensions.length - 1];   
+    data.map(function (d) {       
+        lastAxisValues.push(d[lastAxis]);
+    });
+
+    //Scale if numerical or ordinal
+    if (_.isNumber(lastAxisValues[0])) {
+
+        //Get Range
+        let min = Math.min(...lastAxisValues),
+            max = Math.max(...lastAxisValues);
+
+        //Scale Colors
+        x0 = d3.scaleQuantize()
+            .domain([max, min])
+            .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
+
+        myColor = d3.scaleSequential().domain([max, min])
+            .interpolator(d3.interpolateRgbBasis(x0.range()));  
+    }
+    else {
+        lastAxisValues.sort();
+      
+        myColor = d3.scaleOrdinal().domain(lastAxisValues)
+            .range(["#98c11d", "#0c74bb",  "#33735f", "#0c3c5e", "#032135"]);
+    } 
+
+    //Box shadows
+    var defs = svg.append("defs");
+
+    var filter = defs.append("filter")
+        .attr("id", "dropshadow")
+
+    filter.append("feGaussianBlur")
+        .attr("in", "SourceAlpha")
+        .attr("stdDeviation", 4)
+        .attr("result", "blur");
+    filter.append("feOffset")
+        .attr("in", "blur")
+        .attr("dx", 2)
+        .attr("dy", 2)
+        .attr("result", "offsetBlur");
+
+    var feMerge = filter.append("feMerge");
+
+    feMerge.append("feMergeNode")
+        .attr("in", "offsetBlur")
+    feMerge.append("feMergeNode")
+        .attr("in", "SourceGraphic");
+
     // Render full foreground
     brush();
 };
@@ -486,8 +517,8 @@ function create_legend(colors, brush) {
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
     
-    selection.slice(i, max).forEach(function (d) {        
-        path(d, ctx, color("test", opacity));
+    selection.slice(i, max).forEach(function (d) {
+        path(d, ctx, myColor(d[lastAxis]));
     });
 };
 
@@ -608,12 +639,10 @@ function path(d, ctx, color) {
     dimensions.map(function (p, i) {
         var x = xscale(p),
             y = yscale[p](d[p]);
-
-        var cp1x = x - 0.88 * (x - x0);
-        var cp1y = y0;      
-        var cp2x = x - 0.12 * (x - x0);
-        var cp2y = y;
-
+        var cp1x = x - 0.5 * (x - x0);
+        var cp1y = y0;
+        var cp2x = x - 0.5 * (x - x0);
+        var cp2y = y;      
         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
         x0 = x;
         y0 = y;
@@ -634,7 +663,33 @@ function position(d) {
 
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
-function brush() {
+function brush() {    
+
+    //Remove existing Boxes
+   d3.selectAll(".box").remove();    
+
+    //Group Axis for every box and Draw Box
+    let groupIO = [];
+    let labels = [];
+    for (i = 0; i < IO.length; i++) {
+        groupIO.push(dimensions[i]);      
+        if (IO[i + 1] !== IO[i]) {
+            groupedIO.push(groupIO);    
+
+            if (IO[i] === 0) {
+                labels.push("INPUT");
+            }
+            else if (IO[i] === 1 ) {
+                labels.push("OUTPUT");
+            }
+
+            groupIO = [];
+        };
+    }
+
+    drawBox(groupedIO, labels);
+    groupedIO = [];
+
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
         extents = actives.map(function (p) { return yscale[p].brush.extent(); });
@@ -998,27 +1053,6 @@ function search(selection, str) {
     return _(selection).filter(function (d) { return pattern.exec(d.name); });
 }
 
-//Place IOLabels
-function getLabelPlacing(groupedColumns) {
-
-    var inputLength = groupedColumns[0].values.length;
-    var lastInput = groupedColumns[0].values[inputLength - 1];
-    var firstInput = groupedColumns[0].values[0];
-
-    var centerInput = (xscale(lastInput) - xscale(firstInput)) / 2;
-
-    var outputLength = groupedColumns[1].values.length;
-    var lastOutput = groupedColumns[1].values[outputLength - 1];
-    var firstOutput = groupedColumns[1].values[0];
-
-    var centerOutput = (xscale(lastOutput) - xscale(firstOutput)) / 2;
-
-    var placeInput = xscale(firstInput) + centerInput;
-    var placeOutput = xscale(firstOutput) + centerOutput;
-
-    return { "Input": placeInput, "Output": placeOutput };
-}
-
 function containsObject(obj, list) {
     var i;
     for (i = 0; i < list.length; i++) {
@@ -1042,9 +1076,9 @@ function bPath(d) {
     dimensions.map(function (p, i) {
         var x = xscale(p),
             y = yscale[p](d[p]);
-        var cp1x = x - 0.88 * (x - x0);
+        var cp1x = x - 0.5 * (x - x0);
         var cp1y = y0;
-        var cp2x = x - 0.12 * (x - x0);
+        var cp2x = x - 0.5 * (x - x0);
         var cp2y = y;
         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
         x0 = x;
@@ -1086,10 +1120,11 @@ function drawTable(selected, data) {
     var table = d3.selectAll("#FilterableTable").append("table");
     table.append("thead").append("tr");
 
-    var headers = table.selectAll("tr").selectAll("th")
+    var headers = table.selectAll("tr").selectAll("th")       
         .data(column_names)
         .enter()
         .append("th")
+        .attr("class", "font-RB17 fill3")
         .text(function (d) { return d; });
 
     var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
@@ -1123,6 +1158,7 @@ function drawTable(selected, data) {
         .enter()
         .append("td")
         .text(function (d) { return d; });
+        .attr("class", "font-RR17 fill7")
 
     rows
         .on("click", function (d) {
@@ -1195,6 +1231,63 @@ function drawTable(selected, data) {
                         } else {
                             return 0;
                         }
+                    });
+                }
+            }
+
+        });
+}
+
+function drawBox(groupedIO, labels) { 
+    
+    groupedIO.map(function (group, idx) {
+        let firstAxis = group[0].replace(/ /g, "_");
+        let lastAxis = group[group.length - 1].replace(/ /g, "_");
+
+        positionFirstAxis = d3.select("." + firstAxis).node().getBBox();
+        positionLastAxis = d3.select("." + lastAxis).node().getBBox();
+
+        //Calc Width
+        let width = 0;
+        
+        if (groupedIO[idx + 1] !== undefined) {
+            width = (xscale(groupedIO[idx + 1][0]) - xscale(group[0])) - ((xscale(groupedIO[idx + 1][0]) - xscale(group[group.length - 1])) / 4);           
+        }
+        else {
+            width = xscale(group[group.length - 1]) - xscale(group[0]) + (xscale(group[1]) - xscale(group[0])) / 1.5;
+        }  
+                
+        d3.select("g")
+            .append("rect")
+            .attr("class", "box")
+                .attr("x", xscale(group[0]) - (xscale(group[1]) - xscale(group[0])) / 3 - 7 )
+            .attr("y", positionFirstAxis.y - 35)
+            .attr("width", width + 7)
+            .attr("height", positionFirstAxis.height + 45)
+            .attr("stroke", "#8f8f8f")
+            .attr("stroke-width", "0.2")
+            .attr("fill", "none")            
+            .attr("filter", "url(#dropshadow)");                
+    });       
+
+    // Add a group element for each input output.   
+    svg.selectAll(".dimensionIO")
+        .data(labels)
+        .enter().append("svg:g")
+        .attr("class", "dimensionIO")
+        .attr("transform", function (d, i) {
+            let groupLabel = groupedIO[i];
+            let position = (xscale(groupLabel[groupLabel.length - 1]) - xscale(groupLabel[0])) / 2 + xscale(groupLabel[0]);
+
+            return "translate( " + position + " )";
+        })
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'group-label font-BB17 fill2 spacing1')
+        .attr('y', -80)
+        .attr('x', 0)
+        .text(String);    
+}
                     });
                 }
             }
