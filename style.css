@@ -309,10 +309,6 @@ table {
     margin: 0 auto;
 }
 
-.selected{
-    background-color: cornflowerblue;
-}
-
 /*Fonts*/
 .font-BB17 {
     font-family: BarlowBold;
@@ -419,7 +415,11 @@ td, th {
     padding: 6px;
     border: 1px solid #efefef;
     text-align: center;
-}   
+}
+
+.selected {
+    background-color: #e6f1f8 !important;
+}
 
 /* 
 	Max width before this PARTICULAR table gets nasty
