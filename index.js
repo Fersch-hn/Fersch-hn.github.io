@@ -170,6 +170,7 @@ function load_dataset(fileData) {
     //Scale for the rest of the data
     xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
         if (_.isNumber(data[0][k])) {
+            console.log(d3.extent(data, function (d) { return +d[k]; }));
             return (true) && (yscale[k] = d3.scale.linear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
                 .range([h, 0]));
@@ -235,13 +236,14 @@ function load_dataset(fileData) {
                     xscale.domain(dimensions);
                     update_ticks(d, extent);
 
-                // rerender
-                d3.select("#foreground").style("opacity", null);
-                highlightSelected = true;
-                brush();
-                delete this.__dragged__;
-                delete this.__origin__;
-                delete dragging[d];
+                    // rerender
+                    d3.select("#foreground").style("opacity", null);
+                    highlightSelected = true;
+                    brush();
+                    delete this.__dragged__;
+                    delete this.__origin__;
+                    delete dragging[d];
+                }
             }))
 
     //Get IO Order   
@@ -270,6 +272,7 @@ function load_dataset(fileData) {
         .attr("class", "axis font-RM15 fill4")
         .attr("transform", "translate(0,0)")
         .each(function (d) {
+            console.log(yscale[d]);
             d3.select(this).call(axis.scale(yscale[d]));
         })
         .append("svg:text")
@@ -1154,11 +1157,11 @@ function drawTable(selected, data) {
                 }
             }
             return arr;
-            })
+        })
         .enter()
         .append("td")
-        .text(function (d) { return d; });
-        .attr("class", "font-RR17 fill7")
+        .text(function (d) { return d; })
+        .attr("class", "font-RR17 fill7");
 
     rows
         .on("click", function (d) {
@@ -1287,13 +1290,7 @@ function drawBox(groupedIO, labels) {
         .attr('y', -80)
         .attr('x', 0)
         .text(String);    
-}
-                    });
-                }
-            }
-
-        });
-}
+}                  
 
 function resizeExtent(selection) {    
     selection
