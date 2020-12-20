@@ -26,11 +26,12 @@ var m = [110, 0, 20, 0],
     excluded_groups = [],
     tableSelect = [],
     myColor,
-    lastAxis,
+    refAxis,
     IO = [],
     groupedIO = [],
-    highlightSelected = false, 
+    highlightSelected = false,
     brushing = false;
+   
 
 //HSL
 var colors = {
@@ -213,9 +214,8 @@ function load_dataset(fileData) {
             .on("dragend", function (d) {
                 if (!brushing) {
                     if (!this.__dragged__) {
-                        // no movement, invert axis
-                        var extent = invert_axis(d);
-
+                        // no movement, invert axis                       
+                        refAxis = d;
                     } else {
                         // reorder axes
                         d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
@@ -344,36 +344,7 @@ function load_dataset(fileData) {
         .selectAll("path")
         .data(data) 
         .enter().append("path")
-        .attr("d", bPath);
-
-    let lastAxisValues = [];
-    //Reference Axis for coloring order
-    lastAxis = dimensions[dimensions.length - 1];   
-    data.map(function (d) {       
-        lastAxisValues.push(d[lastAxis]);
-    });
-
-    //Scale if numerical or ordinal
-    if (_.isNumber(lastAxisValues[0])) {
-
-        //Get Range
-        let min = Math.min(...lastAxisValues),
-            max = Math.max(...lastAxisValues);
-
-        //Scale Colors
-        x0 = d3.scaleQuantize()
-            .domain([max, min])
-            .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
-
-        myColor = d3.scaleSequential().domain([max, min])
-            .interpolator(d3.interpolateRgbBasis(x0.range()));  
-    }
-    else {
-        lastAxisValues.sort();
-      
-        myColor = d3.scaleOrdinal().domain(lastAxisValues)
-            .range(["#98c11d", "#0c74bb",  "#33735f", "#0c3c5e", "#032135"]);
-    } 
+        .attr("d", bPath);  
 
     //Box shadows
     var defs = svg.append("defs");
@@ -470,7 +441,7 @@ function create_legend(colors, brush) {
 function render_range(selection, i, max, opacity, ctx) {
     
     selection.slice(i, max).forEach(function (d) {
-        path(d, ctx, myColor(d[lastAxis]));
+        path(d, ctx, myColor(d[refAxis]));
     });
 };
 
@@ -616,6 +587,41 @@ function position(d) {
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
 function brush() {    
+
+    //Line Coloring   
+    //Reference Axis for coloring order
+    refAxisValues = [];
+    if (!refAxis) {
+        refAxis = dimensions[dimensions.length - 1];
+    } 
+   
+    data.map(function (d) {
+        refAxisValues.push(d[refAxis]);
+    });
+
+    //Scale if numerical or ordinal
+    if (_.isNumber(refAxisValues[0])) {
+
+        //Get Range
+        let min = Math.min(...refAxisValues),
+            max = Math.max(...refAxisValues);
+
+        //Scale Colors
+        x0 = d3.scaleQuantize()
+            .domain([max, min])
+            .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
+
+        myColor = d3.scaleSequential().domain([max, min])
+            .interpolator(d3.interpolateRgbBasis(x0.range()));
+    }
+    else {
+        refAxisValues.sort();
+
+        myColor = d3.scaleOrdinal().domain(refAxisValues)
+            .range(["#98c11d", "#0c74bb", "#33735f", "#0c3c5e", "#032135"]);
+    } 
+
+
     
     //Remove existing Boxes
    d3.selectAll(".box").remove();    
@@ -790,14 +796,12 @@ function paths(selected, ctx, count) {
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
     // update brushes
-    debugger;
     if (d) {
         var brush_el = d3.selectAll(".brush")
             .filter(function (key) { return key == d; });
         // single tick
         if (extent) {
             // restore previous extent
-            debugger;
             brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));            
         } else {
             brush_el.call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush));
@@ -1138,10 +1142,31 @@ function drawTable(selected, data) {
     /**  sort functionality **/
     headers
         .on("click", function (d) {
+            var extent;
             if (!(_.isNumber(data[0][d]))) {
                 headerClicks[d]++;
-                if (headerClicks[d] % 2 == 0) {
+                if (headerClicks[d] % 2 != 0) {
+                    // sort descending: alphabetically
+                    if (!(headerClicks[d] === 1)) {
+                        extent = invert_axis(d);
+                    }
+                   
+                    rows.sort(function (a, b) {
+                        if (a[d].toUpperCase() < b[d].toUpperCase()) {
+                            return 1;
+                        } else if (a[d].toUpperCase() > b[d].toUpperCase()) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    });
+                }
+                else if (headerClicks[d] % 2 == 0) {
                     // sort ascending: alphabetically
+                    if (!(headerClicks[d] === 1)) {
+                        extent = invert_axis(d);
+                    }
+
                     rows.sort(
                         function (a, b) {
                             if (a[d].toUpperCase() < b[d].toUpperCase()) {
@@ -1155,46 +1180,46 @@ function drawTable(selected, data) {
                             }
                         });
                 }
-                else if (headerClicks[d] % 2 != 0) {
-                    // sort descending: alphabetically
-                    rows.sort(function (a, b) {
-                        if (a[d].toUpperCase() < b[d].toUpperCase()) {
-                            return 1;
-                        } else if (a[d].toUpperCase() > b[d].toUpperCase()) {
-                            return -1;
-                        } else {
-                            return 0;
-                        }
-                    });
-                }
+                
             }
             else {
                 headerClicks[d]++;
-                if (headerClicks[d] % 2 == 0) {
+                if (headerClicks[d] % 2 != 0) {
+                    // sort descending: numerically
+                    if (!(headerClicks[d] === 1)) {
+                        extent = invert_axis(d);
+                    }
+
                     rows.sort(function (a, b) {
                         if (+a[d] < +b[d]) {
-                            return -1;
-                        } else if (+a[d] > +b[d]) {
                             return 1;
+                        } else if (+a[d] > +b[d]) {
+                            return -1;
                         } else {
                             return 0;
                         }
                     });
                 }
-                else if (headerClicks[d] % 2 != 0) {
-                    // sort descending: numerically
+                else if (headerClicks[d] % 2 == 0) {
+                    if (!(headerClicks[d] === 1)) {
+                        extent = invert_axis(d);
+                    }
+
                     rows.sort(function (a, b) {
                         if (+a[d] < +b[d]) {
-                            return 1;
-                        } else if (+a[d] > +b[d]) {
                             return -1;
+                        } else if (+a[d] > +b[d]) {
+                            return 1;
                         } else {
                             return 0;
                         }
                     });
                 }
             }
-
+           
+            if (!(headerClicks[d] === 1)) {
+                update_ticks(d, extent);
+            }
         });
 }
 
