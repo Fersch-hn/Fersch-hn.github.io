@@ -56,11 +56,13 @@ function upload_button(el, callback) {
         //Validate CSV
         var fileName = uploader.files[0].name;
         if (!(/\.(csv)$/i).test(fileName)) {
-            document.getElementById('error').innerHTML = "Please Upload a CSV";
+            document.getElementById('error').innerHTML = fileName + " - Please Upload a CSV";
             return;
         }
 
+        let name = fileName.split(".");
         document.getElementById('error').innerHTML = "";
+        document.getElementById('error').innerHTML = name[0];               
 
         var file = this.files[0];
         reader.readAsText(file);
@@ -241,6 +243,7 @@ function load_dataset(fileData) {
             }))
 
     //Get IO Order   
+    IO = [];
     magnitudes.map(function (d) {
         if (d.io === "Input") IO.push(0);
         else if (d.io === "Output") IO.push(1);
@@ -1078,8 +1081,7 @@ function drawTable(selected, data) {
     
     let elHeight = 0;
     for (let item of el) {
-        let h = item.offsetHeight;
-        console.log(h);
+        let h = item.offsetHeight;       
         elHeight += h;
     }
 
@@ -1232,9 +1234,10 @@ function drawTable(selected, data) {
         });
 }
 
-function drawBox(groupedIO, labels) { 
-    
+function drawBox(groupedIO, labels) {   
+
     groupedIO.map(function (group, idx) {
+        
         let firstAxis = group[0].replace(/ /g, "_");
         let lastAxis = group[group.length - 1].replace(/ /g, "_");
 

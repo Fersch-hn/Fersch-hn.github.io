@@ -275,6 +275,14 @@ button#exclude-data {
     line-height: 24px;
 }
 
+.file-upload > input {
+    display: none;
+}
+
+.file-upload img {
+    cursor: pointer;
+}
+
 /* Scrollbars */
 
 ::-webkit-scrollbar {
@@ -348,6 +356,11 @@ table {
 .font-RL17 {
     font-family: RobotoLight;
     font-size: 17px;
+}
+
+.font-RB41 {
+    font-family: RobotoBold;
+    font-size: 41px;
 }
 
 /*Font fills*/

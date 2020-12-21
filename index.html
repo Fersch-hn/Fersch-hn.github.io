@@ -2,14 +2,27 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <title>Data Viz</title>
+    <title>Parametric Modelling Tool</title>
     <link rel="stylesheet" type="text/css" href="fonts.css" />
     <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
     <div class="mainDiv">
-        <input type="file" id="uploader">
-        <span id="error"></span>
+        <div style="margin-top:30px">           
+            <p class="font-RB41 fill1">Parametric Data</p>
+        </div>
+       
+        <div class="file-upload">
+            <label for="uploader">
+                <img src="./icons/folder-outline.svg" style="max-height: 20px; max-width: 20px; margin-left: 10px;" />
+                <img src="./icons/refresh-outline.svg" style="max-height: 20px; max-width: 20px; margin-left: 0px;"
+                     onclick="var element = document.getElementById('uploader');
+                    var event = new Event('change');
+                    element.dispatchEvent(event);" />
+                <span id="error" class="font-RR22 fill5"></span>
+            </label>
+            <input id="uploader" type="file" />
+        </div>              
     </div>        
     <div id="chart" class="mainDiv">
         <canvas id="background"></canvas>
@@ -37,6 +50,7 @@
 
 <script src="index.js"></script>
 <script>
-    upload_button("uploader", load_dataset);
+    var element = document.getElementById("uploader");
+    upload_button("uploader", load_dataset);          
 </script>
 </html>
