@@ -1073,12 +1073,21 @@ function drawTable(selected, data) {
     d3.selectAll("#table").append("div")
         .attr("id", "container")
 
-    d3.selectAll("#container").append("div")
-        .attr("id", "FilterableTable");
+    //Calc Remaining Space in Body
+    let el = document.getElementsByClassName("mainDiv");
+    
+    let elHeight = 0;
+    for (let item of el) {
+        let h = item.offsetHeight;
+        console.log(h);
+        elHeight += h;
+    }
 
-    d3.selectAll("#FilterableTable").append("h1")
-        .attr("id", "title")
-        .text("My Data")
+    let tHeight = document.body.clientHeight - elHeight - 50;    
+
+    d3.selectAll("#container").append("div")
+        .attr("id", "FilterableTable")
+        .style("max-height", tHeight + "px");    
 
     var table = d3.selectAll("#FilterableTable").append("table");
     table.append("thead").append("tr");

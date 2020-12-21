@@ -7,34 +7,17 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <div id="header">
-        <h1>My Data Viz</h1>
-        <button title="Zoom in on selected data" id="keep-data" disabled="disabled">Keep</button>
-        <button title="Remove selected data" id="exclude-data" disabled="disabled">Exclude</button>
-        <button title="Export data as CSV" id="export-data">Export</button>
-        <div class="controls">
-            <strong id="rendered-count"></strong>/<strong id="selected-count"></strong><!--<strong id="data-count"></strong>-->
-            <div class="fillbar"><div id="selected-bar"><div id="rendered-bar">&nbsp;</div></div></div>
-            Lines at <strong id="opacity"></strong> opacity.
-            <span class="settings">
-                <button id="hide-ticks">Hide Ticks</button>
-                <button id="show-ticks" disabled="disabled">Show Ticks</button>
-                <button id="dark-theme">Dark</button>
-                <button id="light-theme" disabled="disabled">Light</button>
-            </span>
-        </div>
-        <div style="clear:both;"></div>
-    </div>
-    <input type="file" id="uploader">
-    <span id="error"></span>
-    <div id="chart">
+    <div class="mainDiv">
+        <input type="file" id="uploader">
+        <span id="error"></span>
+    </div>        
+    <div id="chart" class="mainDiv">
         <canvas id="background"></canvas>
         <canvas id="foreground"></canvas>
         <canvas id="highlight"></canvas>
         <svg></svg>
     </div>
-    <div id="table">
-
+    <div id="table" class="mainDiv">
     </div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous"></script>

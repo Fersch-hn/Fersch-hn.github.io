@@ -388,7 +388,9 @@ table {
 
 
 
-
+#FilterableTable {
+    overflow-y: auto;   
+}
 
 
 table {
@@ -402,6 +404,14 @@ tr:nth-of-type(odd) {
 
 tr:nth-of-type(even) {
     background: #fafafa;
+}
+
+th {
+    position: sticky;
+    top: -1px;
+    z-index: 2;
+    box-shadow: 1px 1px 1px 1px #efefef inset, 1px 1px 1px 1px #efefef;
+    border-top: 0;
 }
 
 th {
