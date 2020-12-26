@@ -4,7 +4,7 @@
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight - 450, 240]);
 
-var m = [110, 0, 20, 0],
+var m = [120, 0, 35, 0],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
@@ -1278,10 +1278,10 @@ function drawBox(groupedIO, labels) {
         d3.select("g")
             .append("rect")
             .attr("class", "box")
-                .attr("x", xscale(group[0]) - (xscale(group[1]) - xscale(group[0])) / 3 - 7 )
-            .attr("y", positionFirstAxis.y - 35)
-            .attr("width", width + 7)
-            .attr("height", positionFirstAxis.height + 45)
+                .attr("x", xscale(group[0]) - (xscale(group[1]) - xscale(group[0])) / 3 - 10 )
+            .attr("y", positionFirstAxis.y - 45)
+            .attr("width", width + 11)
+            .attr("height", positionFirstAxis.height + 60)
             .attr("stroke", "#8f8f8f")
             .attr("stroke-width", "0.2")
             .attr("fill", "none")            
