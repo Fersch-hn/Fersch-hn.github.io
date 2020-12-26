@@ -30,8 +30,10 @@ var m = [110, 0, 20, 0],
     IO = [],
     groupedIO = [],
     highlightSelected = false,
-    brushing = false;
-   
+    brushing = false,
+    firstOutputPosition,
+    lastInputPosition,
+    outOfSpace;   
 
 //HSL
 var colors = {
@@ -198,7 +200,19 @@ function load_dataset(fileData) {
             .on("drag", function (d) {
                 if (!brushing) {
                     dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                    dimensions.sort(function (a, b) { return position(a) - position(b); });
+                    //Cannot drag Output to Input
+                    if (magnitudes.find(x => x.name === d).io === "Input") {
+                        outOfSpace = position(d) >= firstOutputPosition;
+                    }
+                    else {
+                        outOfSpace = position(d) <= lastInputPosition;
+                    }
+
+                    if (!outOfSpace) {
+                        dimensions.sort(function (a, b) {                       
+                            return position(a) - position(b);
+                        });
+                    }                   
 
                     xscale.domain(dimensions);
                     g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
@@ -241,6 +255,13 @@ function load_dataset(fileData) {
                     delete dragging[d];
                 }
             }))
+
+    //Get First Output and last input
+    let out = magnitudes.filter(x => x.io === "Output");
+    firstOutputPosition = position(out[0].name);
+
+    let inp = magnitudes.filter(x => x.io === "Input");
+    lastInputPosition = position(inp[inp.length - 1].name);   
 
     //Get IO Order   
     IO = [];
