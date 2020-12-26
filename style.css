@@ -433,6 +433,7 @@ td, th {
     padding: 6px;
     border: 1px solid #efefef;
     text-align: center;
+    padding: 10px;
 }
 
 .selected {
