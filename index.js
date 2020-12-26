@@ -970,7 +970,17 @@ window.onresize = function () {
     // update axis placement
     axis = axis.ticks(1 + height / 50),
         d3.selectAll(".axis")
-            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });    
+            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
+
+    //Add Background Lines
+    d3.selectAll("background").remove();
+
+    backgroundLines = svg.append("g")
+        .attr("class", "background")
+        .selectAll("path")
+        .data(data)
+        .enter().append("path")
+        .attr("d", bPath);     
 
     // render data
     brush();
