@@ -191,6 +191,7 @@ function load_dataset(fileData) {
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
             .on("dragstart", function (d) {
+                console.log(brushing);
                 if (!brushing) {
                     dragging[d] = this.__origin__ = xscale(d);
                     this.__dragged__ = false;
@@ -683,6 +684,7 @@ function brush() {
             if (_.include(actives, dimension)) {
                 var extentArr = extents[actives.indexOf(dimension)];
                 var extent = [];
+                console.log(extentArr);
                 extentArr.map(function (a) {
                     a.map(function (b) {
                         extent.push(b);
@@ -953,13 +955,22 @@ window.onresize = function () {
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
     // update brush placement
     d3.selectAll(".brush")
-        .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
+        .each(function (d) {
+            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+                .extentAdaption(resizeExtent)
+                .y(yscale[d]).on("brush", function () {
+                    brushing = true;
+                    brush();
+                })
+            );
+        })   
+
     brush_count++;
 
     // update axis placement
     axis = axis.ticks(1 + height / 50),
         d3.selectAll(".axis")
-            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
+            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });    
 
     // render data
     brush();
