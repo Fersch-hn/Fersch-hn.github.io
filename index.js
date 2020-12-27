@@ -34,7 +34,8 @@ var m = [120, 0, 35, 0],
     firstOutputPosition,
     lastInputPosition,
     outOfSpace,
-    labels = [];   
+    labels = [],
+    magnitudes = [];   
 
 //HSL
 var colors = {
@@ -125,8 +126,7 @@ function load_dataset(fileData) {
         return d;
     });
 
-    //Get Magnitudes, Input/Outputs and Targets
-    var magnitudes = [];
+    //Get Magnitudes, Input/Outputs and Targets    
     var header = data[0];
     var oldLabels = [];
 
@@ -152,6 +152,9 @@ function load_dataset(fileData) {
         }
         magnitudes.push(magnitudeObject);
     }  
+
+    console.log(magnitudes);
+
 
     //Create Data with clean key names
     var newData = [];
@@ -328,19 +331,6 @@ function load_dataset(fileData) {
             let obj = magnitudes.find(m => m.name === d);
             if (obj.target === null) { return " " }
             else { return obj.target; }
-        });
-
-    var firstTarget = 1;
-    g.append("svg:g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'target-label font-RB17 fill3')
-        .attr('y', -10)
-        .attr('x', -40)
-        .text((d) => {
-            let obj = magnitudes.find(m => m.name === d);
-            if (!(obj.target === null)) { firstTarget++ }
-            if (firstTarget === 2) { return "Target: " }
         });    
 
     // Add and store a brush for each axis.
@@ -971,48 +961,7 @@ window.onresize = function () {
         .selectAll("path")
         .data(data)
         .enter().append("path")
-        .attr("d", bPath); 
-
-    ////Labels
-    //d3.selectAll(".dimensionIO").remove();
-
-    ////Group Axis for every box and Draw Box
-    //let groupIO = [];
-    //labels = [];
-    //for (i = 0; i < IO.length; i++) {
-    //    groupIO.push(dimensions[i]);
-    //    if (IO[i + 1] !== IO[i]) {
-    //        groupedIO.push(groupIO);
-
-    //        if (IO[i] === 0) {
-    //            labels.push("INPUT");
-    //        }
-    //        else if (IO[i] === 1) {
-    //            labels.push("OUTPUT");
-    //        }
-
-    //        groupIO = [];
-    //    };
-    //}
-
-    //svg.selectAll(".dimensionIO")
-    //    .data(labels)
-    //    .enter().append("svg:g")
-    //    .attr("class", "dimensionIO")
-    //    .attr("transform", function (d, i) {
-    //        let groupLabel = groupedIO[i];
-    //        let position = (xscale(groupLabel[groupLabel.length - 1]) - xscale(groupLabel[0])) / 2 + xscale(groupLabel[0]);
-
-    //        return "translate( " + position + " )";
-    //    })
-    //    .append("text")
-    //    .attr("text-anchor", "middle")
-    //    .attr('class', 'group-label font-BB17 fill2 spacing1')
-    //    .attr('y', -80)
-    //    .attr('x', 0)
-    //    .text(String);  
-
-    //groupedIO = [];
+        .attr("d", bPath);    
 
     // render data
     brush();
@@ -1359,7 +1308,22 @@ function drawBox(groupedIO) {
         .attr('class', 'group-label font-BB17 fill2 spacing1')
         .attr('y', -80)
         .attr('x', 0)
-        .text(String);    
+        .text(String);  
+
+    //Add Target Label
+    let target = magnitudes.filter(x => x.target !== null); 
+
+    d3.selectAll(".target-label").remove();    
+    svg.append("svg:g")
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'font-RB17 fill3 target-label')
+        .attr("transform", function () {          
+            return "translate( " + xscale(target[0].name) + " )";
+        })
+        .attr('y', -10)
+        .attr('x', -60)
+        .text("Target:");        
 }                  
 
 function resizeExtent(selection) {    
