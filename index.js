@@ -33,7 +33,8 @@ var m = [120, 0, 35, 0],
     brushing = false,
     firstOutputPosition,
     lastInputPosition,
-    outOfSpace;   
+    outOfSpace,
+    labels = [];   
 
 //HSL
 var colors = {
@@ -645,15 +646,13 @@ function brush() {
         myColor = d3.scaleOrdinal().domain(refAxisValues)
             .range(["#98c11d", "#0c74bb", "#33735f", "#0c3c5e", "#032135"]);
     } 
-
-
     
     //Remove existing Boxes
    d3.selectAll(".box").remove();    
 
     //Group Axis for every box and Draw Box
     let groupIO = [];
-    let labels = [];
+    labels = [];
     for (i = 0; i < IO.length; i++) {
         groupIO.push(dimensions[i]);      
         if (IO[i + 1] !== IO[i]) {
@@ -670,7 +669,7 @@ function brush() {
         };
     }
 
-    drawBox(groupedIO, labels);
+    drawBox(groupedIO);
     groupedIO = [];
 
     brush_count++;
@@ -980,7 +979,48 @@ window.onresize = function () {
         .selectAll("path")
         .data(data)
         .enter().append("path")
-        .attr("d", bPath);     
+        .attr("d", bPath); 
+
+    ////Labels
+    //d3.selectAll(".dimensionIO").remove();
+
+    ////Group Axis for every box and Draw Box
+    //let groupIO = [];
+    //labels = [];
+    //for (i = 0; i < IO.length; i++) {
+    //    groupIO.push(dimensions[i]);
+    //    if (IO[i + 1] !== IO[i]) {
+    //        groupedIO.push(groupIO);
+
+    //        if (IO[i] === 0) {
+    //            labels.push("INPUT");
+    //        }
+    //        else if (IO[i] === 1) {
+    //            labels.push("OUTPUT");
+    //        }
+
+    //        groupIO = [];
+    //    };
+    //}
+
+    //svg.selectAll(".dimensionIO")
+    //    .data(labels)
+    //    .enter().append("svg:g")
+    //    .attr("class", "dimensionIO")
+    //    .attr("transform", function (d, i) {
+    //        let groupLabel = groupedIO[i];
+    //        let position = (xscale(groupLabel[groupLabel.length - 1]) - xscale(groupLabel[0])) / 2 + xscale(groupLabel[0]);
+
+    //        return "translate( " + position + " )";
+    //    })
+    //    .append("text")
+    //    .attr("text-anchor", "middle")
+    //    .attr('class', 'group-label font-BB17 fill2 spacing1')
+    //    .attr('y', -80)
+    //    .attr('x', 0)
+    //    .text(String);  
+
+    //groupedIO = [];
 
     // render data
     brush();
@@ -1276,7 +1316,7 @@ function drawTable(selected, data) {
         });
 }
 
-function drawBox(groupedIO, labels) {   
+function drawBox(groupedIO) {   
 
     groupedIO.map(function (group, idx) {
         
@@ -1309,7 +1349,9 @@ function drawBox(groupedIO, labels) {
             .attr("filter", "url(#dropshadow)");                
     });       
 
-    // Add a group element for each input output.   
+    // Add a group element for each input output.  
+    d3.selectAll(".dimensionIO").remove();
+
     svg.selectAll(".dimensionIO")
         .data(labels)
         .enter().append("svg:g")
