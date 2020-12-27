@@ -191,8 +191,7 @@ function load_dataset(fileData) {
         .attr("class", function (d) { return "dimension " + d.replace(/ /g, "_") })      
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
-            .on("dragstart", function (d) {
-                console.log(brushing);
+            .on("dragstart", function (d) {                
                 if (!brushing) {
                     dragging[d] = this.__origin__ = xscale(d);
                     this.__dragged__ = false;
@@ -664,7 +663,6 @@ function brush() {
             else if (IO[i] === 1 ) {
                 labels.push("OUTPUT");
             }
-
             groupIO = [];
         };
     }
@@ -683,21 +681,13 @@ function brush() {
             if (_.include(actives, dimension)) {
                 var extentArr = extents[actives.indexOf(dimension)];
                 var extent = [];
-                console.log(extentArr);
+               
                 extentArr.map(function (a) {
                     a.map(function (b) {
                         extent.push(b);
                     })
-                });
-
-                d3.select(element)
-                    .selectAll('text')
-                    .style('font-weight', 'bold')
-                    .style('font-size', '13px')
-                    .style('display', function () {
-                        var value = d3.select(this).data();
-                        return extent[0] <= value && value <= extent[1] ? null : "none"
-                    });
+                });               
+               
             } else {
                 d3.select(element)
                     .selectAll('text')
@@ -829,12 +819,14 @@ function update_ticks(d, extent) {
             // restore previous extent
             brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));            
         } else {
-            brush_el.call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush));
+            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));          
         }
     } else {
         // all ticks
         d3.selectAll(".brush")
-            .each(function (d) { d3.select(this).call(yscale[d].brush = d3.svg.brush().y(yscale[d]).on("brush", brush)); })
+            .each(function (d) {
+                d3.select(this).call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
+            })
     }
 
     brush_count++;
