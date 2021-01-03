@@ -1255,7 +1255,7 @@ function drawTable(selected, data) {
             if (!(headerClicks[d] === 1)) {
                 update_ticks(d, extent);
             }
-        });
+        });    
 }
 
 function drawBoxes() {  
@@ -1314,10 +1314,10 @@ function drawLabels(groupedIO) {
         .text("Target:");     
 }
 
-function resizeExtent(selection) {    
+function resizeExtent(selection) {   
     selection
-        .attr("x", -8)
-        .attr("width", 16);
+        .attr("x", -19)
+        .attr("width", 37);
 }
 
 function drawRect(x, rectWidth, rectHeight) {
