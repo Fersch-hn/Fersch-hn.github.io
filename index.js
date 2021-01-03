@@ -4,7 +4,7 @@
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight * .5, 240]);
 
-var m = [120, 20, 35, 20],
+var m = [120, 40, 35, 40],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
