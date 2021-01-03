@@ -2,9 +2,9 @@
 // Copyright (c) 2012, Kai Chang
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight - 450, 240]);
+    height = d3.max([document.body.clientHeight * .5, 240]);
 
-var m = [120, 0, 35, 0],
+var m = [120, 20, 35, 20],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
@@ -35,7 +35,9 @@ var m = [120, 0, 35, 0],
     lastInputPosition,
     outOfSpace,
     labels = [],
-    magnitudes = [];   
+    magnitudes = [],
+    inputs = [],
+    outputs = [];   
 
 //HSL
 var colors = {
@@ -275,10 +277,8 @@ function load_dataset(fileData) {
     });   
 
     //Group for Inputs and Outputs
-    var columnKeys = Object.keys(data[0]);
+    var columnKeys = Object.keys(data[0]);   
 
-    var inputs = [];
-    var outputs = [];
     columnKeys.map(function (d) {
         let obj = magnitudes.find(m => m.name === d);
 
@@ -657,7 +657,8 @@ function brush() {
         };
     }
 
-    drawBox(groupedIO);
+    drawBoxes();
+    drawLabels(groupedIO);
     groupedIO = [];
 
     brush_count++;
@@ -1108,11 +1109,11 @@ function drawTable(selected, data) {
         elHeight += h;
     }
 
-    let tHeight = document.body.clientHeight - elHeight - 50;    
+    let tHeight = document.body.clientHeight - elHeight;    
 
     d3.selectAll("#container").append("div")
         .attr("id", "FilterableTable")
-        .style("max-height", tHeight + "px");    
+        .style("max-height", tHeight - 50 + "px");    
 
     var table = d3.selectAll("#FilterableTable").append("table");
     table.append("thead").append("tr");
@@ -1257,40 +1258,27 @@ function drawTable(selected, data) {
         });
 }
 
-function drawBox(groupedIO) {   
+function drawBoxes() {  
 
-    groupedIO.map(function (group, idx) {
-        
-        let firstAxis = group[0].replace(/ /g, "_");
-        let lastAxis = group[group.length - 1].replace(/ /g, "_");
+    let spaceBetweenAxes = xscale(inputs[1]) - xscale(inputs[0]);
+    let lastOutputPosition = xscale(outputs[outputs.length - 1]);  
+    
+    //Extra Space Between last Axis and svg end.
+    let extraSpace = width - lastOutputPosition - m[3] - m[1];
 
-        positionFirstAxis = d3.select("." + firstAxis).node().getBBox();
-        positionLastAxis = d3.select("." + lastAxis).node().getBBox();
+    let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.6);
+    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.4) + extraSpace;
+    let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.4);
 
-        //Calc Width
-        let width = 0;
-        
-        if (groupedIO[idx + 1] !== undefined) {
-            width = (xscale(groupedIO[idx + 1][0]) - xscale(group[0])) - ((xscale(groupedIO[idx + 1][0]) - xscale(group[group.length - 1])) / 4);           
-        }
-        else {
-            width = xscale(group[group.length - 1]) - xscale(group[0]) + (xscale(group[1]) - xscale(group[0])) / 1.5;
-        }  
-                
-        d3.select("g")
-            .append("rect")
-            .attr("class", "box")
-                .attr("x", xscale(group[0]) - (xscale(group[1]) - xscale(group[0])) / 3 - 10 )
-            .attr("y", positionFirstAxis.y - 45)
-            .attr("width", width + 11)
-            .attr("height", positionFirstAxis.height + 60)
-            .attr("stroke", "#8f8f8f")
-            .attr("stroke-width", "0.2")
-            .attr("fill", "none")            
-            .attr("filter", "url(#dropshadow)");                
-    });       
+    //Inputs Box
+    drawRect(m[1], wInputBox, height);
 
-    // Add a group element for each input output.  
+    //Outputs Box
+    drawRect(xOutputRect, wOutputBox, height);         
+}                  
+
+function drawLabels(groupedIO) {
+    // Add a Label for each input output.  
     d3.selectAll(".dimensionIO").remove();
 
     svg.selectAll(".dimensionIO")
@@ -1308,26 +1296,40 @@ function drawBox(groupedIO) {
         .attr('class', 'group-label font-BB17 fill2 spacing1')
         .attr('y', -80)
         .attr('x', 0)
-        .text(String);  
+        .text(String);
 
     //Add Target Label
-    let target = magnitudes.filter(x => x.target !== null); 
+    let target = magnitudes.filter(x => x.target !== null);
 
-    d3.selectAll(".target-label").remove();    
+    d3.selectAll(".target-label").remove();
     svg.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'font-RB17 fill3 target-label')
-        .attr("transform", function () {          
+        .attr("transform", function () {
             return "translate( " + xscale(target[0].name) + " )";
         })
         .attr('y', -10)
         .attr('x', -60)
-        .text("Target:");        
-}                  
+        .text("Target:");     
+}
 
 function resizeExtent(selection) {    
     selection
         .attr("x", -8)
         .attr("width", 16);
+}
+
+function drawRect(x, rectWidth, rectHeight) {
+    d3.select("svg")
+        .append("rect")
+        .attr("class", "box")
+        .attr("x", x)
+        .attr("y", 10)
+        .attr("width", rectWidth)
+        .attr("height", rectHeight - 10)
+        .attr("stroke", "#8f8f8f")
+        .attr("stroke-width", "0.2")
+        .attr("fill", "none")
+        .attr("filter", "url(#dropshadow)");     
 }
