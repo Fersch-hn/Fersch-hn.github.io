@@ -180,7 +180,7 @@ function load_dataset(fileData) {
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scaleLinear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
-                .range([h, 0]));
+                .range([h-2, 2]));
         }
         else {
             return (true) && (yscale[k] = d3.scale.ordinal()
