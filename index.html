@@ -8,8 +8,9 @@
 </head>
 <body>
     <div class="mainDiv" id="titles">
-        <div style="margin-top:20px; margin-bottom:10px">           
-            <span class="font-RB41 fill1">Parametric Data</span>
+        <div style=" display: flex; align-items: center; margin-right:40px   ; ">
+            <span  class="font-RB41 fill1">Parametric Data</span>
+            <img src="./img/logo.jpg" style="  max-height: 120px; max-width: 120px; margin-left: auto; " />
         </div>
        
         <div class="file-upload">
@@ -22,7 +23,10 @@
                     var event = new Event('change');
                     element.dispatchEvent(event);" />
             <input id="uploader" type="file" />
-        </div>              
+        </div>    
+        <div style="">
+           
+        </div>
     </div>        
     <div id="chart" class="mainDiv">
         <canvas id="background"></canvas>
