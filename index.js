@@ -153,10 +153,7 @@ function load_dataset(fileData) {
             magnitudeObject.target = null;
         }
         magnitudes.push(magnitudeObject);
-    }  
-
-    console.log(magnitudes);
-
+    }       
 
     //Create Data with clean key names
     var newData = [];
@@ -256,6 +253,10 @@ function load_dataset(fileData) {
                     // rerender
                     d3.select("#foreground").style("opacity", null);                   
                     brush();
+
+                    //Background
+                    paths(data, background, brush_count, true);                   
+
                     delete this.__dragged__;
                     delete this.__origin__;
                     delete dragging[d];
@@ -351,16 +352,8 @@ function load_dataset(fileData) {
         .append("title")
         .text("Drag or resize this filter");
 
-    legend = create_legend(colors, brush);    
-
-    //Add Background Lines
-    backgroundLines = svg.append("g")
-        .attr("class", "background")
-        .selectAll("path")
-        .data(data) 
-        .enter().append("path")
-        .attr("d", bPath);  
-
+    legend = create_legend(colors, brush);       
+   
     //Box shadows
     var defs = svg.append("defs");
 
@@ -386,6 +379,9 @@ function load_dataset(fileData) {
 
     // Render full foreground
     brush();
+
+    //Render Background
+    paths(data, background, brush_count, true);   
 };
 
 
@@ -454,9 +450,15 @@ function create_legend(colors, brush) {
 
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
-    
+    let isForeground = ctx === foreground;
+
     selection.slice(i, max).forEach(function (d) {
-        path(d, ctx, myColor(d[refAxis]));
+        let pColor;
+
+        if (isForeground) pColor = myColor(d[refAxis]);
+        else pColor = color("background", 0.2);
+
+        path(d, ctx, pColor);
     });
 };
 
@@ -566,7 +568,7 @@ function path(d, ctx, color) {
 }
 */
 
-function path(d, ctx, color) {
+function path(d, ctx, color) {  
 
     if (color) ctx.strokeStyle = color;
     ctx.beginPath();
@@ -766,10 +768,8 @@ function brush() {
     legend.selectAll(".tally")
         .text(function (d, i) { return tallies[d].length });
 
-    drawTable(selected, data);
-
     // Render selected lines
-    paths(selected, foreground, brush_count, true);  
+    paths(selected, foreground, brush_count, true);    
 }
 
 // render a set of polylines on a canvas
@@ -952,17 +952,7 @@ window.onresize = function () {
     // update axis placement
     axis = axis.ticks(1 + height / 50),
         d3.selectAll(".axis")
-            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
-
-    //Add Background Lines
-    d3.selectAll("background").remove();
-
-    backgroundLines = svg.append("g")
-        .attr("class", "background")
-        .selectAll("path")
-        .data(data)
-        .enter().append("path")
-        .attr("d", bPath);    
+            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });       
 
     // render data
     brush();
@@ -1052,31 +1042,6 @@ function containsObject(obj, list) {
     }
     return false;
 }
-
-//Add Lines Just for color
-function bPath(d) {
-    let ctx = background;
-    let bColor = color("background", 0.2);
-    
-    if (bColor) ctx.strokeStyle = bColor;
-    ctx.beginPath();
-    var x0 = xscale(dimensions[0]) - 15,
-        y0 = yscale[dimensions[0]](d[dimensions[0]]);   // left edge
-    ctx.moveTo(x0, y0);
-    dimensions.map(function (p, i) {
-        var x = xscale(p),
-            y = yscale[p](d[p]);
-        var cp1x = x - 0.5 * (x - x0);
-        var cp1y = y0;
-        var cp2x = x - 0.5 * (x - x0);
-        var cp2y = y;
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-        x0 = x;
-        y0 = y;
-    });
-    ctx.lineTo(x0 + 15, y0);                               // right edge
-    ctx.stroke();
-}   
 
 function drawTable(selected, data) {  
 
