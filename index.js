@@ -726,9 +726,11 @@ function brush() {
     if (!activeBrushes) {
         selected = data;
         highlightSelected = false;
+        brushing = false;
     }
     else {
         highlightSelected = true;
+        brushing = true;
     }
 
     //Check tableSelections
@@ -768,8 +770,10 @@ function brush() {
     legend.selectAll(".tally")
         .text(function (d, i) { return tallies[d].length });
 
+    drawTable(selected, data);
+
     // Render selected lines
-    paths(selected, foreground, brush_count, true);    
+    paths(selected, foreground, brush_count, true);   
 }
 
 // render a set of polylines on a canvas
