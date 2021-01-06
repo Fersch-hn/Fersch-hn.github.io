@@ -172,8 +172,7 @@ function load_dataset(fileData) {
         newData.push(newrow);
     }
 
-    data = newData;
-   
+    data = newData;   
 
     //Scale for the rest of the data
     xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
@@ -283,17 +282,19 @@ function load_dataset(fileData) {
     magnitudes.map(function (d) {
         if (d.io === "Input") IO.push(0);
         else if (d.io === "Output") IO.push(1);
-    });
+    });   
 
     //Group for Inputs and Outputs
     var columnKeys = Object.keys(data[0]);
 
+    inputs = [];
+    outputs = [];
     columnKeys.map(function (d) {
         let obj = magnitudes.find(m => m.name === d);
 
         if (obj.io === "Input") inputs.push(d);
         else if (obj.io === "Output") outputs.push(d);
-    });
+    });    
 
     //Get Targets Axes Names
     targets = magnitudes.filter(x => x.target !== null);
