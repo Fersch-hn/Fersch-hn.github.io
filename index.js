@@ -112,12 +112,12 @@ var svg = d3.select("svg")
 
 // Load the data and visualization
 function load_dataset(fileData) {
-
+    
     //Remove Existing Axes
     d3.selectAll(".dimension").remove();
 
     var raw_data = d3.csv.parse(fileData);
-
+    
     // Convert quantitative scales to floats
     data = raw_data.map(function (d) {
         for (var k in d) {
@@ -127,11 +127,11 @@ function load_dataset(fileData) {
         };
         return d;
     });
-
+    
     //Get Magnitudes, Input/Outputs and Targets    
     var header = data[0];
     var oldLabels = [];
-
+    magnitudes = [];
     for (var key in header) {
 
         oldLabels.push(key);
@@ -154,7 +154,7 @@ function load_dataset(fileData) {
         }
         magnitudes.push(magnitudeObject);
     }   
-
+    
     //Create Data with clean key names
     var newData = [];
     for (let e in data) {
@@ -171,6 +171,7 @@ function load_dataset(fileData) {
     }
 
     data = newData;
+   
 
     //Scale for the rest of the data
     xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
@@ -603,7 +604,7 @@ function position(d) {
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
 function brush() {
-
+   
     //Line Coloring   
     //Reference Axis for coloring order
     refAxisValues = [];
@@ -1248,6 +1249,10 @@ function drawBoxes() {
 }
 
 function drawLabels(groupedIO) {
+
+    let inputLabelPosition = xscale(inputs[inputs.length - 1]) - ((xscale(inputs[inputs.length - 1]) - xscale(inputs[0])) / 2);
+    let outputLabelPosition = xscale(outputs[outputs.length - 1]) - ((xscale(outputs[outputs.length - 1]) - xscale(outputs[0])) / 2);
+   
     // Add a Label for each input output.  
     d3.selectAll(".dimensionIO").remove();
 
@@ -1256,10 +1261,8 @@ function drawLabels(groupedIO) {
         .enter().append("svg:g")
         .attr("class", "dimensionIO")
         .attr("transform", function (d, i) {
-            let groupLabel = groupedIO[i];
-            let position = (xscale(groupLabel[groupLabel.length - 1]) - xscale(groupLabel[0])) / 2 + xscale(groupLabel[0]);
-
-            return "translate( " + position + " )";
+            if (d === "INPUT") return "translate( " + inputLabelPosition + " )";
+            else if (d === "OUTPUT") return "translate( " + outputLabelPosition + " )";                    
         })
         .append("text")
         .attr("text-anchor", "middle")
