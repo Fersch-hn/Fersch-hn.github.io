@@ -37,17 +37,17 @@ var m = [120, 40, 35, 40],
     labels = [],
     magnitudes = [],
     inputs = [],
-    outputs = [];   
+    outputs = [];    
 
 //HSL
 var colors = {
-    "test": [225, 53, 70],    
+    "test": [225, 53, 70],
     "background": [225, 5, 59]
 };
 
 // handle upload button
 function upload_button(el, callback) {
-    
+
     var uploader = document.getElementById(el);
     var reader = new FileReader();
 
@@ -68,7 +68,7 @@ function upload_button(el, callback) {
 
         let name = fileName.split(".");
         document.getElementById('error').innerHTML = "";
-        document.getElementById('error').innerHTML = name[0];               
+        document.getElementById('error').innerHTML = name[0];
 
         var file = this.files[0];
         reader.readAsText(file);
@@ -88,7 +88,7 @@ d3.selectAll("canvas")
 // Foreground canvas for primary view
 foreground = document.getElementById('foreground').getContext('2d');
 foreground.globalCompositeOperation = "destination-over";
-foreground.strokeStyle = "rgba(0,100,160,0.1)"; 
+foreground.strokeStyle = "rgba(0,100,160,0.1)";
 foreground.lineWidth = 1.7;
 foreground.fillText("Loading...", w / 2, h / 2);
 
@@ -107,7 +107,7 @@ var svg = d3.select("svg")
     .attr("width", w + m[1] + m[3])
     .attr("height", h + m[0] + m[2])
     .append("svg:g")
-    .attr("transform", "translate(" + m[3] + "," + m[0] + ")")    
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
 
 
 // Load the data and visualization
@@ -153,7 +153,7 @@ function load_dataset(fileData) {
             magnitudeObject.target = null;
         }
         magnitudes.push(magnitudeObject);
-    }       
+    }   
 
     //Create Data with clean key names
     var newData = [];
@@ -171,17 +171,17 @@ function load_dataset(fileData) {
     }
 
     data = newData;
-   
+
     //Scale for the rest of the data
     xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
         if (_.isNumber(data[0][k])) {
             return (true) && (yscale[k] = d3.scaleLinear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
-                .range([h-2, 2]));
+                .range([h - 2, 2]));
         }
         else {
             return (true) && (yscale[k] = d3.scale.ordinal()
-                .domain(data.map(function (d) { ordinal.push(k); return d[k]; }))    
+                .domain(data.map(function (d) { ordinal.push(k); return d[k]; }))
                 .rangePoints([h, 0], .1));
         }
     }));
@@ -190,15 +190,14 @@ function load_dataset(fileData) {
     var g = svg.selectAll(".dimension")
         .data(dimensions)
         .enter().append("svg:g")
-        .attr("class", function (d) { return "dimension " + d.replace(/ /g, "_") })      
+        .attr("class", function (d) { return "dimension " + d.replace(/ /g, "_") })
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
-            .on("dragstart", function (d) {                
+            .on("dragstart", function (d) {
                 if (!brushing) {
                     dragging[d] = this.__origin__ = xscale(d);
-                    this.__dragged__ = false;
-                    d3.select("#foreground").style("opacity", "0.35");
-                }                
+                    this.__dragged__ = false;                    
+                }
             })
             .on("drag", function (d) {
                 if (!brushing) {
@@ -212,10 +211,10 @@ function load_dataset(fileData) {
                     }
 
                     if (!outOfSpace) {
-                        dimensions.sort(function (a, b) {                       
+                        dimensions.sort(function (a, b) {
                             return position(a) - position(b);
                         });
-                    }                   
+                    }
 
                     xscale.domain(dimensions);
                     g.attr("transform", function (d) { return "translate(" + position(d) + ")"; });
@@ -251,11 +250,11 @@ function load_dataset(fileData) {
                     update_ticks(d, extent);
 
                     // rerender
-                    d3.select("#foreground").style("opacity", null);                   
+                    d3.select("#foreground").style("opacity", null);
                     brush();
 
-                    //Background
-                    paths(data, background, brush_count, true);                   
+                    //Background Lines
+                    paths(data, background, brush_count, true);     
 
                     delete this.__dragged__;
                     delete this.__origin__;
@@ -268,17 +267,17 @@ function load_dataset(fileData) {
     firstOutputPosition = position(out[0].name);
 
     let inp = magnitudes.filter(x => x.io === "Input");
-    lastInputPosition = position(inp[inp.length - 1].name);   
+    lastInputPosition = position(inp[inp.length - 1].name);
 
     //Get IO Order   
     IO = [];
     magnitudes.map(function (d) {
         if (d.io === "Input") IO.push(0);
         else if (d.io === "Output") IO.push(1);
-    });   
+    });
 
     //Group for Inputs and Outputs
-    var columnKeys = Object.keys(data[0]);   
+    var columnKeys = Object.keys(data[0]);
 
     columnKeys.map(function (d) {
         let obj = magnitudes.find(m => m.name === d);
@@ -288,13 +287,13 @@ function load_dataset(fileData) {
     });
 
     var groupedColumns = [{ key: "Input", values: inputs },
-    { key: "Output", values: outputs }];   
+    { key: "Output", values: outputs }];
 
     // Add an axis and title.
     g.append("svg:g")
         .attr("class", "axis font-RM15 fill4")
         .attr("transform", "translate(0,0)")
-        .each(function (d) {            
+        .each(function (d) {
             d3.select(this).call(axis.scale(yscale[d]));
         })
         .append("svg:text")
@@ -332,7 +331,7 @@ function load_dataset(fileData) {
             let obj = magnitudes.find(m => m.name === d);
             if (obj.target === null) { return " " }
             else { return obj.target; }
-        });    
+        });
 
     // Add and store a brush for each axis.
     g.append("svg:g")
@@ -343,17 +342,17 @@ function load_dataset(fileData) {
                 .y(yscale[d]).on("brush", function () {
                     brushing = true;
                     brush();
-                })           
+                })
             );
         })
-        .selectAll("rect").call(resizeExtent);      
+        .selectAll("rect").call(resizeExtent);
 
     g.selectAll(".extent")
         .append("title")
         .text("Drag or resize this filter");
 
-    legend = create_legend(colors, brush);       
-   
+    legend = create_legend(colors, brush);
+
     //Box shadows
     var defs = svg.append("defs");
 
@@ -380,8 +379,8 @@ function load_dataset(fileData) {
     // Render full foreground
     brush();
 
-    //Render Background
-    paths(data, background, brush_count, true);   
+   //Background Lines
+    paths(data, background, brush_count, true);     
 };
 
 
@@ -450,17 +449,17 @@ function create_legend(colors, brush) {
 
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
+    
     let isForeground = ctx === foreground;
-
     selection.slice(i, max).forEach(function (d) {
         let pColor;
 
         if (isForeground) pColor = myColor(d[refAxis]);
-        else pColor = color("background", 0.2);
-
+        else pColor = color("background", 0.2);       
         path(d, ctx, pColor);
-    });
+    });    
 };
+
 
 // simple data table
 function data_table(sample) {
@@ -534,7 +533,7 @@ function invert_axis(d) {
     if (yscale[d].inverted == true) {
         if (ordinal.includes(d)) yscale[d].rangePoints([h, 0], .1);
         else yscale[d].range([h, 0]);
-        
+
         d3.selectAll('.label')
             .filter(function (p) { return p == d; })
             .style("text-decoration", null);
@@ -568,7 +567,7 @@ function path(d, ctx, color) {
 }
 */
 
-function path(d, ctx, color) {  
+function path(d, ctx, color) {
 
     if (color) ctx.strokeStyle = color;
     ctx.beginPath();
@@ -582,7 +581,7 @@ function path(d, ctx, color) {
         var cp1x = x - 0.5 * (x - x0);
         var cp1y = y0;
         var cp2x = x - 0.5 * (x - x0);
-        var cp2y = y;      
+        var cp2y = y;
         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
         x0 = x;
         y0 = y;
@@ -603,15 +602,15 @@ function position(d) {
 
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
-function brush() {    
+function brush() {
 
     //Line Coloring   
     //Reference Axis for coloring order
     refAxisValues = [];
     if (!refAxis) {
         refAxis = dimensions[dimensions.length - 1];
-    } 
-   
+    }
+
     data.map(function (d) {
         refAxisValues.push(d[refAxis]);
     });
@@ -636,23 +635,23 @@ function brush() {
 
         myColor = d3.scaleOrdinal().domain(refAxisValues)
             .range(["#98c11d", "#0c74bb", "#33735f", "#0c3c5e", "#032135"]);
-    } 
-    
+    }
+
     //Remove existing Boxes
-   d3.selectAll(".box").remove();    
+    d3.selectAll(".box").remove();
 
     //Group Axis for every box and Draw Box
     let groupIO = [];
     labels = [];
     for (i = 0; i < IO.length; i++) {
-        groupIO.push(dimensions[i]);      
+        groupIO.push(dimensions[i]);
         if (IO[i + 1] !== IO[i]) {
-            groupedIO.push(groupIO);    
+            groupedIO.push(groupIO);
 
             if (IO[i] === 0) {
                 labels.push("INPUT");
             }
-            else if (IO[i] === 1 ) {
+            else if (IO[i] === 1) {
                 labels.push("OUTPUT");
             }
             groupIO = [];
@@ -674,13 +673,13 @@ function brush() {
             if (_.include(actives, dimension)) {
                 var extentArr = extents[actives.indexOf(dimension)];
                 var extent = [];
-               
+
                 extentArr.map(function (a) {
                     a.map(function (b) {
                         extent.push(b);
                     })
-                });               
-               
+                });
+
             } else {
                 d3.select(element)
                     .selectAll('text')
@@ -702,7 +701,7 @@ function brush() {
         });
 
     // Get lines within extents
-    var selected = [];
+    let selected = [];   
     data
         .filter(function (d) {
             return !_.contains(excluded_groups, d.group);
@@ -713,8 +712,8 @@ function brush() {
                     return e[0] <= d[p] && d[p] <= e[1];
                 })
             }) ? selected.push(d) : null;
-        });
-
+        });   
+   
 
     //Check if there any rects/extents in Axis
     var activeBrushes;
@@ -722,20 +721,20 @@ function brush() {
     var activeBrushes = extentRects[0].some(function (d) {
         return d.attributes.height.value > 0;
     });
-    
+
     if (!activeBrushes) {
         selected = data;
-        highlightSelected = false;
+        highlightSelected = false;     
         brushing = false;
     }
     else {
         highlightSelected = true;
         brushing = true;
-    }
+    }   
 
     //Check tableSelections
     if (tableSelect.length > 0) {
-        highlightSelected = true;                           
+        highlightSelected = true;
         selected = tableSelect
     }
 
@@ -770,15 +769,14 @@ function brush() {
     legend.selectAll(".tally")
         .text(function (d, i) { return tallies[d].length });
 
-    drawTable(selected, data);
+    drawTable(selected, data);   
 
     // Render selected lines
-    paths(selected, foreground, brush_count, true);   
+    paths(selected, foreground, brush_count, true);    
 }
 
 // render a set of polylines on a canvas
 function paths(selected, ctx, count) {
-
     var n = selected.length,
         i = 0,
         opacity = d3.min([2 / Math.pow(n, 0.3), 1]),
@@ -793,15 +791,16 @@ function paths(selected, ctx, count) {
     // render all lines until finished or a new brush event
     function animloop() {
         if (i >= n || count < brush_count) return true;
-        var max = d3.min([i + render_speed, n]);
+        var max = d3.min([i + render_speed, n]);       
         render_range(shuffled_data, i, max, opacity, ctx);
         render_stats(max, n, render_speed);
         i = max;
         timer = optimize(timer);  // adjusts render_speed
     };
-
-    d3.timer(animloop);
+   
+    d3.timer(animloop);   
 }
+
 
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
@@ -812,9 +811,9 @@ function update_ticks(d, extent) {
         // single tick
         if (extent) {
             // restore previous extent
-            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));            
+            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
         } else {
-            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));          
+            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
         }
     } else {
         // all ticks
@@ -825,7 +824,6 @@ function update_ticks(d, extent) {
     }
 
     brush_count++;
-
     show_ticks();
 
     // update axes
@@ -864,7 +862,7 @@ function rescale() {
             yscale[d] = d3.scale.linear()
                 .domain(d3.extent(data, function (p) { return +p[d]; }))
                 .range([h, 0], .1);
-        }   
+        }
     });
 
     update_ticks();
@@ -949,17 +947,20 @@ window.onresize = function () {
                     brush();
                 })
             );
-        })   
+        })
 
     brush_count++;
 
     // update axis placement
     axis = axis.ticks(1 + height / 50),
         d3.selectAll(".axis")
-            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });       
+            .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });   
 
     // render data
     brush();
+
+    //Background Lines
+    paths(data, background, brush_count, true);   
 };
 
 // Remove all but selected from the dataset
@@ -1047,13 +1048,13 @@ function containsObject(obj, list) {
     return false;
 }
 
-function drawTable(selected, data) {  
+function drawTable(selected, data) {
 
     data.sort(function (a, b) {
         if (containsObject(a, selected) && !(containsObject(b, selected))) { return -1 }
         else if (containsObject(a, selected) && containsObject(b, selected)) { return 0; }
         else if (!(containsObject(a, selected)) && (containsObject(b, selected))) { return 1; }
-    });   
+    });
 
     //Remove Existing Table
     d3.select("#table div").remove();
@@ -1071,23 +1072,23 @@ function drawTable(selected, data) {
 
     //Calc Remaining Space in Body
     let el = document.getElementsByClassName("mainDiv");
-    
+
     let elHeight = 0;
     for (let item of el) {
-        let h = item.offsetHeight;       
+        let h = item.offsetHeight;
         elHeight += h;
     }
 
-    let tHeight = document.body.clientHeight - elHeight;    
+    let tHeight = document.body.clientHeight - elHeight;
 
     d3.selectAll("#container").append("div")
         .attr("id", "FilterableTable")
-        .style("max-height", tHeight - 50 + "px");    
+        .style("max-height", tHeight - 50 + "px");
 
     var table = d3.selectAll("#FilterableTable").append("table");
     table.append("thead").append("tr");
 
-    var headers = table.selectAll("tr").selectAll("th")       
+    var headers = table.selectAll("tr").selectAll("th")
         .data(column_names)
         .enter()
         .append("th")
@@ -1141,7 +1142,7 @@ function drawTable(selected, data) {
                 highlightSelected = true;
                 brush();
             }
-        });    
+        });
 
     /**  sort functionality **/
     headers
@@ -1154,7 +1155,7 @@ function drawTable(selected, data) {
                     if (!(headerClicks[d] === 1)) {
                         extent = invert_axis(d);
                     }
-                   
+
                     rows.sort(function (a, b) {
                         if (a[d].toUpperCase() < b[d].toUpperCase()) {
                             return 1;
@@ -1184,7 +1185,7 @@ function drawTable(selected, data) {
                             }
                         });
                 }
-                
+
             }
             else {
                 headerClicks[d]++;
@@ -1220,18 +1221,18 @@ function drawTable(selected, data) {
                     });
                 }
             }
-           
+
             if (!(headerClicks[d] === 1)) {
                 update_ticks(d, extent);
             }
-        });    
+        });
 }
 
-function drawBoxes() {  
+function drawBoxes() {
 
     let spaceBetweenAxes = xscale(inputs[1]) - xscale(inputs[0]);
-    let lastOutputPosition = xscale(outputs[outputs.length - 1]);  
-    
+    let lastOutputPosition = xscale(outputs[outputs.length - 1]);
+
     //Extra Space Between last Axis and svg end.
     let extraSpace = width - lastOutputPosition - m[3] - m[1];
 
@@ -1243,8 +1244,8 @@ function drawBoxes() {
     drawRect(m[1], wInputBox, height);
 
     //Outputs Box
-    drawRect(xOutputRect, wOutputBox, height);         
-}                  
+    drawRect(xOutputRect, wOutputBox, height);
+}
 
 function drawLabels(groupedIO) {
     // Add a Label for each input output.  
@@ -1280,10 +1281,10 @@ function drawLabels(groupedIO) {
         })
         .attr('y', -10)
         .attr('x', -60)
-        .text("Target:");     
+        .text("Target:");
 }
 
-function resizeExtent(selection) {   
+function resizeExtent(selection) {
     selection
         .attr("x", -19)
         .attr("width", 37);
@@ -1300,5 +1301,5 @@ function drawRect(x, rectWidth, rectHeight) {
         .attr("stroke", "#8f8f8f")
         .attr("stroke-width", "0.2")
         .attr("fill", "none")
-        .attr("filter", "url(#dropshadow)");     
+        .attr("filter", "url(#dropshadow)");
 }
