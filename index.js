@@ -37,7 +37,8 @@ var m = [120, 40, 35, 40],
     labels = [],
     magnitudes = [],
     inputs = [],
-    outputs = [];    
+    outputs = [],
+    targets = [];    
 
 //HSL
 var colors = {
@@ -154,6 +155,7 @@ function load_dataset(fileData) {
         }
         magnitudes.push(magnitudeObject);
     }   
+   
     
     //Create Data with clean key names
     var newData = [];
@@ -245,7 +247,8 @@ function load_dataset(fileData) {
                     if (dragging[d] < 12 || dragging[d] > w - 12) {
                         remove_axis(d, g);
 
-                        removeFromIOArrays(d);                        
+                        //Inputs, Outputs, Targets
+                        removeFromArrays(d);                        
                     }
 
                     // TODO required to avoid a bug
@@ -291,6 +294,9 @@ function load_dataset(fileData) {
         if (obj.io === "Input") inputs.push(d);
         else if (obj.io === "Output") outputs.push(d);
     });
+
+    //Get Targets Axes Names
+    targets = magnitudes.filter(x => x.target !== null);
 
     var groupedColumns = [{ key: "Input", values: inputs },
     { key: "Output", values: outputs }];
@@ -1259,19 +1265,18 @@ function drawBoxes() {
     drawRect(xOutputRect, wOutputBox, height);
 }
 
-function drawLabels(groupedIO) {
-
+function drawLabels(groupedIO) { 
     
-    //Add Target Label
-    let target = magnitudes.filter(x => x.target !== null);
-
+     //Add Target Label
     d3.selectAll(".target-label").remove();
     svg.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .attr('class', 'font-RB17 fill3 target-label')
         .attr("transform", function () {
-            return "translate( " + xscale(target[0].name) + " )";
+
+            console.log(targets[0].name);
+            return "translate( " + xscale(targets[0].name) + " )";
         })
         .attr('y', -10)
         .attr('x', -60)
@@ -1322,7 +1327,7 @@ function drawIOLabels() {
 
 }
 
-function removeFromIOArrays(d) {
+function removeFromArrays(d) {
     if (containsObject(d, inputs)) {
         let i = inputs.indexOf(d);
         inputs.splice(i, 1);
@@ -1331,4 +1336,7 @@ function removeFromIOArrays(d) {
         let i = outputs.indexOf(d);
         outputs.splice(i, 1);
     }
+
+    let idx = targets.findIndex(n => n.name === d);
+    targets.splice(idx, 1);
 }
