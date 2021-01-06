@@ -1250,6 +1250,7 @@ function drawBoxes() {
 
     let spaceBetweenAxes = xscale(inputs[1]) - xscale(inputs[0]);
     let lastOutputPosition = xscale(outputs[outputs.length - 1]);
+    let firstOutputPosition = xscale(outputs[0]);
 
     //Extra Space Between last Axis and svg end.
     let extraSpace = width - lastOutputPosition - m[3] - m[1];
