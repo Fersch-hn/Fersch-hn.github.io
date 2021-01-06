@@ -244,6 +244,8 @@ function load_dataset(fileData) {
                     // remove axis if dragged all the way left
                     if (dragging[d] < 12 || dragging[d] > w - 12) {
                         remove_axis(d, g);
+
+                        removeFromIOArrays(d);                        
                     }
 
                     // TODO required to avoid a bug
@@ -255,7 +257,10 @@ function load_dataset(fileData) {
                     brush();
 
                     //Background Lines
-                    paths(data, background, brush_count, true);     
+                    paths(data, background, brush_count, true);                     
+
+                    //Input/Output Label
+                    drawIOLabels();
 
                     delete this.__dragged__;
                     delete this.__origin__;
@@ -381,7 +386,10 @@ function load_dataset(fileData) {
     brush();
 
    //Background Lines
-    paths(data, background, brush_count, true);     
+    paths(data, background, brush_count, true);  
+
+    //Input/Output Labels
+    drawIOLabels();
 };
 
 
@@ -962,6 +970,9 @@ window.onresize = function () {
 
     //Background Lines
     paths(data, background, brush_count, true);   
+
+    //Input/Output Labels
+    drawIOLabels();
 };
 
 // Remove all but selected from the dataset
@@ -1250,27 +1261,7 @@ function drawBoxes() {
 
 function drawLabels(groupedIO) {
 
-    let inputLabelPosition = xscale(inputs[inputs.length - 1]) - ((xscale(inputs[inputs.length - 1]) - xscale(inputs[0])) / 2);
-    let outputLabelPosition = xscale(outputs[outputs.length - 1]) - ((xscale(outputs[outputs.length - 1]) - xscale(outputs[0])) / 2);
-   
-    // Add a Label for each input output.  
-    d3.selectAll(".dimensionIO").remove();
-
-    svg.selectAll(".dimensionIO")
-        .data(labels)
-        .enter().append("svg:g")
-        .attr("class", "dimensionIO")
-        .attr("transform", function (d, i) {
-            if (d === "INPUT") return "translate( " + inputLabelPosition + " )";
-            else if (d === "OUTPUT") return "translate( " + outputLabelPosition + " )";                    
-        })
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr('class', 'group-label font-BB17 fill2 spacing1')
-        .attr('y', -80)
-        .attr('x', 0)
-        .text(String);
-
+    
     //Add Target Label
     let target = magnitudes.filter(x => x.target !== null);
 
@@ -1305,4 +1296,39 @@ function drawRect(x, rectWidth, rectHeight) {
         .attr("stroke-width", "0.2")
         .attr("fill", "none")
         .attr("filter", "url(#dropshadow)");
+}
+
+function drawIOLabels() {
+    let inputLabelPosition = xscale(inputs[inputs.length - 1]) - ((xscale(inputs[inputs.length - 1]) - xscale(inputs[0])) / 2);
+    let outputLabelPosition = xscale(outputs[outputs.length - 1]) - ((xscale(outputs[outputs.length - 1]) - xscale(outputs[0])) / 2);
+
+    // Add a Label for each input output.  
+    d3.selectAll(".dimensionIO").remove();
+
+    svg.selectAll(".dimensionIO")
+        .data(labels)
+        .enter().append("svg:g")
+        .attr("class", "dimensionIO")
+        .attr("transform", function (d, i) {
+            if (d === "INPUT") return "translate( " + inputLabelPosition + " )";
+            else if (d === "OUTPUT") return "translate( " + outputLabelPosition + " )";
+        })
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr('class', 'group-label font-BB17 fill2 spacing1')
+        .attr('y', -80)
+        .attr('x', 0)
+        .text(String);
+
+}
+
+function removeFromIOArrays(d) {
+    if (containsObject(d, inputs)) {
+        let i = inputs.indexOf(d);
+        inputs.splice(i, 1);
+    }
+    else if (containsObject(d, outputs)) {
+        let i = outputs.indexOf(d);
+        outputs.splice(i, 1);
+    }
 }
