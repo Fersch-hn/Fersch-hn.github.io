@@ -26,15 +26,11 @@ var m = [120, 40, 35, 40],
     excluded_groups = [],
     tableSelect = [],
     myColor,
-    refAxis,
-    IO = [],
-    groupedIO = [],
+    refAxis,   
     highlightSelected = false,
-    brushing = false,
-    firstOutputPosition,
-    lastInputPosition,
+    brushing = false,  
     outOfSpace,
-    labels = [],
+    labels = ["INPUT", "OUTPUT"],
     magnitudes = [],
     inputs = [],
     outputs = [],
@@ -64,14 +60,14 @@ function upload_button(el, callback) {
         //Validate CSV
         var fileName = uploader.files[0].name;
         if (!(/\.(csv)$/i).test(fileName)) {
-            document.getElementById('error').innerHTML = fileName + " - Please Upload a CSV";
+            document.getElementById('file-span').innerHTML = fileName + " - Please Upload a CSV";
             return;
         }
 
         let name = fileName.split(".");
         csvFileName = name[0];
-        document.getElementById('error').innerHTML = "";
-        document.getElementById('error').innerHTML = name[0];
+        document.getElementById('file-span').innerHTML = "";
+        document.getElementById('file-span').innerHTML = name[0];
 
         var file = this.files[0];
         reader.readAsText(file);
@@ -269,28 +265,14 @@ function load_dataset(fileData) {
                     paths(data, background, brush_count, true);                     
 
                     //Input/Output Label
-                    drawIOLabels();
+                    drawLabels();
 
                     delete this.__dragged__;
                     delete this.__origin__;
                     delete dragging[d];
                 }
             }))
-
-    //Get First Output and last input
-    let out = magnitudes.filter(x => x.io === "Output");
-    firstOutputPosition = position(out[0].name);
-
-    let inp = magnitudes.filter(x => x.io === "Input");
-    lastInputPosition = position(inp[inp.length - 1].name);
-
-    //Get IO Order   
-    IO = [];
-    magnitudes.map(function (d) {
-        if (d.io === "Input") IO.push(0);
-        else if (d.io === "Output") IO.push(1);
-    });   
-
+    
     //Group for Inputs and Outputs
     var columnKeys = Object.keys(data[0]);
 
@@ -304,10 +286,7 @@ function load_dataset(fileData) {
     });    
 
     //Get Targets Axes Names
-    targets = magnitudes.filter(x => x.target !== null);
-
-    var groupedColumns = [{ key: "Input", values: inputs },
-    { key: "Output", values: outputs }];
+    targets = magnitudes.filter(x => x.target !== null);   
 
     // Add an axis and title.
     g.append("svg:g")        
@@ -421,7 +400,7 @@ function load_dataset(fileData) {
     paths(data, background, brush_count, true);  
 
     //Input/Output Labels
-    drawIOLabels();
+    drawLabels();
 };
 
 
@@ -679,29 +658,8 @@ function brush() {
     }
 
     //Remove existing Boxes
-    d3.selectAll(".box").remove();
-
-    //Group Axis for every box and Draw Box
-    let groupIO = [];
-    labels = [];
-    for (i = 0; i < IO.length; i++) {
-        groupIO.push(dimensions[i]);
-        if (IO[i + 1] !== IO[i]) {
-            groupedIO.push(groupIO);
-
-            if (IO[i] === 0) {
-                labels.push("INPUT");
-            }
-            else if (IO[i] === 1) {
-                labels.push("OUTPUT");
-            }
-            groupIO = [];
-        };
-    }
-
-    drawBoxes();
-    drawLabels(groupedIO);
-    groupedIO = [];
+    d3.selectAll(".box").remove();        
+    drawBoxes();      
 
     brush_count++;
     var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
@@ -1004,7 +962,7 @@ window.onresize = function () {
     paths(data, background, brush_count, true);   
 
     //Input/Output Labels
-    drawIOLabels();
+    drawLabels();
 
     //Tick style font
     d3.selectAll(".tick")
@@ -1299,28 +1257,6 @@ function drawBoxes() {
     drawRect(xOutputRect, wOutputBox, height);
 }
 
-function drawLabels(groupedIO) { 
-    
-     //Add Target Label
-    d3.selectAll(".target-label").remove();
-    svg.append("svg:g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .style("font-size", "17px")
-        .style('font-weight', '700')
-        .style('font-family', '"Roboto"')
-        .style('fill', "#4e4f4f")
-        .attr('class', 'font-RB17 fill3 target-label')
-        .attr("transform", function () {
-
-            console.log(targets[0].name);
-            return "translate( " + xscale(targets[0].name) + " )";
-        })
-        .attr('y', -10)
-        .attr('x', -60)
-        .text("Target:");
-}
-
 function resizeExtent(selection) {
     selection
         .attr("x", -19)
@@ -1341,7 +1277,7 @@ function drawRect(x, rectWidth, rectHeight) {
         .attr("filter", "url(#dropshadow)");
 }
 
-function drawIOLabels() {
+function drawLabels() {
     let inputLabelPosition = xscale(inputs[inputs.length - 1]) - ((xscale(inputs[inputs.length - 1]) - xscale(inputs[0])) / 2);
     let outputLabelPosition = xscale(outputs[outputs.length - 1]) - ((xscale(outputs[outputs.length - 1]) - xscale(outputs[0])) / 2);
 
@@ -1367,6 +1303,23 @@ function drawIOLabels() {
         .attr('y', -80)
         .attr('x', 0)
         .text(String);
+
+    //Add Target Label
+    d3.selectAll(".target-label").remove();
+    svg.append("svg:g")
+        .append("text")
+        .attr("text-anchor", "middle")
+        .style("font-size", "17px")
+        .style('font-weight', '700')
+        .style('font-family', '"Roboto"')
+        .style('fill', "#4e4f4f")
+        .attr('class', 'font-RB17 fill3 target-label')
+        .attr("transform", function () {           
+            return "translate( " + xscale(targets[0].name) + " )";
+        })
+        .attr('y', -10)
+        .attr('x', -60)
+        .text("Target:");
 }
 
 function removeFromArrays(d) {

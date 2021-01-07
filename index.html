@@ -16,7 +16,7 @@
         <div class="file-upload">
             <label for="uploader">
                 <img src="./icons/folder-outline.svg" style="max-height: 20px; max-width: 20px;" />
-                <span id="error" class="font-RR22 fill5"></span>
+                <span id="file-span" class="font-RR22 fill5"></span>
             </label>
             <img src="./icons/refresh-outline.svg" style="max-height: 20px; max-width: 20px; margin-left: 0px;"
                  onclick="var element = document.getElementById('uploader');
@@ -25,29 +25,23 @@
             <input id="uploader" type="file" />
             <img id='saveButton' src="./icons/arrow-down-outline.svg" style="  max-height: 20px; max-width: 20px;"/>
         </div>
-        <!--<div style="">
-            <button id='saveButton'>Export my D3 visualization to PNG</button>
-        </div>-->
     </div>
+
     <div id="chart" class="mainDiv">
         <canvas id="background"></canvas>
         <canvas id="foreground"></canvas>
         <canvas id="highlight"></canvas>
         <svg></svg>
     </div>
+
     <div id="table" class="mainDiv">
     </div>
 </body>
-<script src="https://code.jquery.com/jquery-1.9.1.min.js"
-        integrity="sha256-wS9gmOZBqsqWxgIVgA8Y9WcQOa7PgSIX+rPA0VL2rbQ="
-        crossorigin="anonymous"></script>
-<script src="https://unpkg.com/computed-style-to-inline-style"></script>
 <script src="http://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous"></script>
 <script src="https://underscorejs.org/underscore.js"></script>
 <script type="text/javascript" src="./d3.svg.multibrush.js" charset="utf-8"></script>
-
 
 <script src="https://d3js.org/d3-array.v2.min.js"></script>
 <script src="https://d3js.org/d3-color.v2.min.js"></script>
@@ -56,7 +50,6 @@
 <script src="https://d3js.org/d3-time.v2.min.js"></script>
 <script src="https://d3js.org/d3-time-format.v3.min.js"></script>
 <script src="https://d3js.org/d3-scale.v3.min.js"></script>
-
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
 <script src="index.js"></script>
