@@ -9,10 +9,10 @@
 <body>
     <div class="mainDiv" id="titles">
         <div style=" display: flex; align-items: center; margin-right:40px   ; ">
-            <span  class="font-RB41 fill1">Parametric Data</span>
+            <span class="font-RB41 fill1">Parametric Data</span>
             <img src="./img/logo.jpg" style="  max-height: 120px; max-width: 120px; margin-left: auto; " />
         </div>
-       
+
         <div class="file-upload">
             <label for="uploader">
                 <img src="./icons/folder-outline.svg" style="max-height: 20px; max-width: 20px;" />
@@ -23,11 +23,12 @@
                     var event = new Event('change');
                     element.dispatchEvent(event);" />
             <input id="uploader" type="file" />
-        </div>    
-        <div style="">
-           
+            <img id='saveButton' src="./icons/arrow-down-outline.svg" style="  max-height: 20px; max-width: 20px;"/>
         </div>
-    </div>        
+        <!--<div style="">
+            <button id='saveButton'>Export my D3 visualization to PNG</button>
+        </div>-->
+    </div>
     <div id="chart" class="mainDiv">
         <canvas id="background"></canvas>
         <canvas id="foreground"></canvas>
@@ -37,6 +38,12 @@
     <div id="table" class="mainDiv">
     </div>
 </body>
+<script src="https://code.jquery.com/jquery-1.9.1.min.js"
+        integrity="sha256-wS9gmOZBqsqWxgIVgA8Y9WcQOa7PgSIX+rPA0VL2rbQ="
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/computed-style-to-inline-style"></script>
+<script src="http://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous"></script>
 <script src="https://underscorejs.org/underscore.js"></script>
 <script type="text/javascript" src="./d3.svg.multibrush.js" charset="utf-8"></script>
@@ -55,6 +62,6 @@
 <script src="index.js"></script>
 <script>
     var element = document.getElementById("uploader");
-    upload_button("uploader", load_dataset);          
+    upload_button("uploader", load_dataset);
 </script>
 </html>

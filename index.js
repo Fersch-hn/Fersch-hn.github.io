@@ -38,7 +38,8 @@ var m = [120, 40, 35, 40],
     magnitudes = [],
     inputs = [],
     outputs = [],
-    targets = [];    
+    targets = [],
+    csvFileName;    
 
 //HSL
 var colors = {
@@ -68,6 +69,7 @@ function upload_button(el, callback) {
         }
 
         let name = fileName.split(".");
+        csvFileName = name[0];
         document.getElementById('error').innerHTML = "";
         document.getElementById('error').innerHTML = name[0];
 
@@ -110,6 +112,11 @@ var svg = d3.select("svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
 
+svg.append('defs')
+    .append('style')
+    .attr('type', 'text/css')
+    .text("@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900');")
+    .text("@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@100;200;300;400;500;600;700;800;900');");
 
 // Load the data and visualization
 function load_dataset(fileData) {
@@ -303,28 +310,42 @@ function load_dataset(fileData) {
     { key: "Output", values: outputs }];
 
     // Add an axis and title.
-    g.append("svg:g")
+    g.append("svg:g")        
         .attr("class", "axis font-RM15 fill4")
         .attr("transform", "translate(0,0)")
         .each(function (d) {
             d3.select(this).call(axis.scale(yscale[d]));
         })
-        .append("svg:text")
+        .style("font-size", "17px")
+        .style('font-weight', '700')
+        .style('font-family', '"Roboto"')   
+        .style('fill', "#4e4f4f")
+        .append("svg:text")        
         .attr("text-anchor", "middle")
+        .attr("class", "axis-label")
         //Change Label Spacing.
         .attr("y", -50)
-        .attr("x", 0)
-        .attr("class", "label font-RB17 fill3")
+        .attr("x", 0)            
         .text(String)
         .append("title")
         .text("Click to invert. Drag to reorder");
 
-
+    //Tick style font
+    g.selectAll(".tick")
+        .style("font-size", "15px")
+        .style('font-weight', '500')
+        .style('font-family', '"Roboto"') 
+        .style('fill', "#58595b")
+  
     //Add Extra Labels
     //Measure Magnitudes
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
+        .style("font-size", "15px")
+        .style('font-weight', '500')
+        .style('font-family', '"Roboto"')
+        .style('fill', "#969696")
         .attr('class', 'magnitude font-RR15 fill7')
         .attr('y', -30)
         .attr('x', 0)
@@ -337,6 +358,10 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
+        .style("font-size", "15px")
+        .style('font-weight', '500')
+        .style('font-family', '"Roboto"')
+        .style('fill', "#969696")
         .attr('class', 'target-value font-RR15 fill7')
         .attr('y', -10)
         .attr('x', 0)
@@ -927,7 +952,7 @@ function export_csv() {
 // scale to window size
 window.onresize = function () {
     width = document.body.clientWidth,
-        height = d3.max([document.body.clientHeight - 500, 220]);
+        height = d3.max([document.body.clientHeight * .5 , 240]);
 
     w = width - m[1] - m[3],
         h = height - m[0] - m[2];
@@ -937,7 +962,7 @@ window.onresize = function () {
 
     d3.selectAll("canvas")
         .attr("width", w)
-        .attr("height", h)
+        .attr("height", h + 2)
         .style("padding", m.join("px ") + "px");
 
     d3.select("svg")
@@ -949,7 +974,7 @@ window.onresize = function () {
     xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
     dimensions.forEach(function (d) {
         yscale[d].range([h, 0], .1);
-    });
+    });   
 
     d3.selectAll(".dimension")
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
@@ -963,7 +988,7 @@ window.onresize = function () {
                     brush();
                 })
             );
-        })
+        })     
 
     brush_count++;
 
@@ -980,6 +1005,13 @@ window.onresize = function () {
 
     //Input/Output Labels
     drawIOLabels();
+
+    //Tick style font
+    d3.selectAll(".tick")
+        .style("font-size", "15px")
+        .style('font-weight', '500')
+        .style('font-family', '"Roboto"')
+        .style('fill', "#58595b")
 };
 
 // Remove all but selected from the dataset
@@ -1274,6 +1306,10 @@ function drawLabels(groupedIO) {
     svg.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
+        .style("font-size", "17px")
+        .style('font-weight', '700')
+        .style('font-family', '"Roboto"')
+        .style('fill', "#4e4f4f")
         .attr('class', 'font-RB17 fill3 target-label')
         .attr("transform", function () {
 
@@ -1322,11 +1358,15 @@ function drawIOLabels() {
         })
         .append("text")
         .attr("text-anchor", "middle")
-        .attr('class', 'group-label font-BB17 fill2 spacing1')
+        //.attr('class', 'group-label font-BB17 fill2 spacing1')
+        .style("font-size", "17px")
+        .style('font-weight', '700')
+        .style('font-family', '"Barlow"')
+        .style('fill', "#333333")
+        .style('letter-spacing', "2px")
         .attr('y', -80)
         .attr('x', 0)
         .text(String);
-
 }
 
 function removeFromArrays(d) {
@@ -1341,4 +1381,26 @@ function removeFromArrays(d) {
 
     let idx = targets.findIndex(n => n.name === d);
     targets.splice(idx, 1);
+}
+
+// Set-up the export button
+d3.select('#saveButton').on('click', function () {  
+
+    html2canvas(document.querySelector('#chart')).then(function (canvas) {
+        var myImage = canvas.toDataURL();
+        downloadURI(myImage, csvFileName +  ".jpeg");        
+    });
+});
+
+
+function downloadURI(uri, name) {
+    var link = document.createElement("a");
+
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+
+    //after creating link you should delete dynamic link
+    //clearDynamicLink(link); 
 }
