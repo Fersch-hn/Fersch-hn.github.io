@@ -108,10 +108,12 @@ var svg = d3.select("svg")
     .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
 
-svg.append('defs')
-    .append('style')
-    .attr('type', 'text/css')
-    .text("@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900');" + "@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@100;200;300;400;500;600;700;800;900');");
+var styles = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900');"
+    + "@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@100;200;300;400;500;600;700;800;900');";
+    svg.append('defs')
+        .append('style')
+        .attr('type', 'text/css')
+        .text(styles); 
 
 // Load the data and visualization
 function load_dataset(fileData) {
