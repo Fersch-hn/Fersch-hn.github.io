@@ -89,7 +89,6 @@ foreground = document.getElementById('foreground').getContext('2d');
 foreground.globalCompositeOperation = "destination-over";
 foreground.strokeStyle = "rgba(0,100,160,0.1)";
 foreground.lineWidth = 1.7;
-foreground.fillText("Loading...", w / 2, h / 2);
 
 // Highlight canvas for temporary interactions
 highlighted = document.getElementById('highlight').getContext('2d');
@@ -765,10 +764,7 @@ function brush() {
                     else return e[0] <= yscale[p](d[p]) && yscale[p](d[p]) <= e[1];                                   
                 })
             }) ? selected.push(d) : null;
-        });
-
-    console.log(actives, extents);
-
+        });      
 
     //Check if there any rects/extents in Axis
     var activeBrushes;
