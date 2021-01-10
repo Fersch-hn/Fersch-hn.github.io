@@ -1285,7 +1285,7 @@ function drawRect(x, rectWidth, rectHeight) {
         .attr("x", x)
         .attr("y", 10)
         .attr("width", rectWidth)
-        .attr("height", rectHeight - 10)
+        .attr("height", rectHeight - 20)
         .attr("stroke", "#8f8f8f")
         .attr("stroke-width", "0.2")
         .attr("fill", "none")
