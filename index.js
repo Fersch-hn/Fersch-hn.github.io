@@ -1322,6 +1322,7 @@ function drawLabels() {
     svg.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
+        .attr("class", "target-label")
         .style("font-size", "17px")
         .style('font-weight', '700')
         .style('font-family', '"RobotoBold"')
