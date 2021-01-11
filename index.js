@@ -938,6 +938,10 @@ window.onresize = function () {
         .attr("height", h + 2)
         .style("padding", m.join("px ") + "px");
 
+    foreground.lineWidth = 1.7;
+    background.lineWidth = 1.7;
+    highlight.lineWidth = 4;
+
     d3.select("svg")
         .attr("width", w + m[1] + m[3])
         .attr("height", h + m[0] + m[2])
@@ -946,7 +950,7 @@ window.onresize = function () {
 
     xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
     dimensions.forEach(function (d) {
-        yscale[d].range([h, 0], .1);
+        yscale[d].range([h - 2, 2], .1);
     });
 
     d3.selectAll(".dimension")
