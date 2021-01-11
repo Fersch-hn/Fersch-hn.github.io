@@ -11,8 +11,8 @@ body {
     font-size: 12px;
     line-height: 1.4em;
     background: #fdfdfd;
-    color: #404040;
-}
+/*    color: #404040;
+*/}
 
     body.dark {
         background: #131313;

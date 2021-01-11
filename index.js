@@ -128,7 +128,7 @@ function base64Fontface(fontName, base64) {
 d3.selectAll(".file-upload")
     .style("font-size", "22px")    
     .style('font-family', '"RobotoRegular"')
-    .style('fill', "#5e676d")       
+    .style('color', "#5e676d")       
 
 // Load the data and visualization
 function load_dataset(fileData) {
@@ -313,7 +313,7 @@ function load_dataset(fileData) {
         })
         .style("font-size", "17px")        
         .style('font-family', '"RobotoBold"')
-        .style('fill', "#4e4f4f")
+        .style('color', "#4e4f4f")
         .append("svg:text")
         .attr("text-anchor", "middle")
         .attr("class", "axis-label")
@@ -326,10 +326,9 @@ function load_dataset(fileData) {
 
     //Tick style font
     g.selectAll(".tick")
-        .style("font-size", "15px")
-     
+        .style("font-size", "15px")     
         .style('font-family', '"RobotoMedium"')
-        .style('fill', "#58595b")
+        .style('color', "#58595b")
 
     //Add Extra Labels
     //Measure Magnitudes
@@ -338,7 +337,7 @@ function load_dataset(fileData) {
         .attr("text-anchor", "middle")
         .style("font-size", "15px")      
         .style('font-family', '"RobotoRegular"')
-        .style('fill', "#969696")
+        .style('color', "#969696")
         .attr('class', 'magnitude font-RR15 fill7')
         .attr('y', -30)
         .attr('x', 0)
@@ -351,10 +350,9 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "15px")
-        //.style('font-weight', '500')
+        .style("font-size", "15px")        
         .style('font-family', '"RobotoRegular"')
-        .style('fill', "#969696")
+        .style('color', "#4e4f4f")        
         .attr('class', 'target-value font-RR15 fill7')
         .attr('y', -10)
         .attr('x', 0)
@@ -987,7 +985,7 @@ window.onresize = function () {
     d3.selectAll(".tick")
         .style("font-size", "15px")      
         .style('font-family', '"RobotoMedium"')
-        .style('fill', "#58595b")
+        .style('color', "#58595b")
 };
 
 // Remove all but selected from the dataset
@@ -1121,7 +1119,7 @@ function drawTable(selected, data) {
         .append("th")     
         .style("font-size", "17px")
         .style('font-family', '"RobotoBold"')
-        .style('fill', "#4e4f4f")
+        .style('color', "#4e4f4f")
 
         .text(function (d) { return d; });
 
@@ -1158,7 +1156,7 @@ function drawTable(selected, data) {
         .text(function (d) { return d; })
         .style("font-size", "17px")
         .style('font-family', '"RobotoLight"')
-        .style('fill', "#4e4f4f");    
+        .style('color', "#4e4f4f");    
 
     rows
         .on("click", function (d) {
@@ -1319,7 +1317,7 @@ function drawLabels() {
         .attr("text-anchor", "middle")      
         .style("font-size", "17px")        
         .style('font-family', '"BarlowBold"')
-        .style('fill', "#333333")
+        .style('color', "#333333")
         .style('letter-spacing', "2px")
         .attr('y', -80)
         .attr('x', 0)
@@ -1332,9 +1330,9 @@ function drawLabels() {
         .attr("text-anchor", "middle")
         .attr("class", "target-label")
         .style("font-size", "17px")
-        .style('font-weight', '700')
         .style('font-family', '"RobotoBold"')
-        .style('fill', "#4e4f4f")       
+        .style('color', "#4e4f4f")       
+        .attr("class", "fill4")
         .attr("transform", function () {
             return "translate( " + xscale(targets[0].name) + " )";
         })
