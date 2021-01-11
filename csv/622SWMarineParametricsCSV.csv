@@ -1,4 +1,4 @@
-Wall:Input:R-Value,Window:Input:U-Value,HRV:Input:(%),TEUI:Output:(kWh/m2):120,TEDI Whole:Output:(kWh/m2):35,TEDI Res:Output:(kWh/m2):200,GHGI:Output:(kgCO2/m2):100
+Wall:input:R-Value,Window:input,HRV:input,TEUI:Output:(kWh/m2):120,TEDI Whole:output:(kWh/m2):35,TEDI Res:Output:(kWh/m2):200,GHGI:Output:(kgCO2/m2):100
 R-8,U-0.35,60,93.75881252,23.50925401,30.90925401,1.031346938
 R-8,U-0.35,0,95.63878131,34.68281597,42.08281597,1.052026594
 R-8,U-0.30,60,93.34192647,20.59636815,27.99636815,1.026761191

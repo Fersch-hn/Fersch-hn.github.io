@@ -222,7 +222,7 @@ function load_dataset(fileData) {
                 if (!brushing) {
                     dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
                     //Cannot drag Output to Input
-                    if (magnitudes.find(x => x.name === d).io === "Input") {
+                    if (magnitudes.find(x => x.name === d).io.toLowerCase() === "input") {
                         outOfSpace = position(d) >= firstOutputPosition;
                     }
                     else {
@@ -295,8 +295,8 @@ function load_dataset(fileData) {
     columnKeys.map(function (d) {
         let obj = magnitudes.find(m => m.name === d);
 
-        if (obj.io === "Input") inputs.push(d);
-        else if (obj.io === "Output") outputs.push(d);
+        if (obj.io.toLowerCase() === "input") inputs.push(d);
+        else if (obj.io.toLowerCase() === "output") outputs.push(d);
     });
 
     //Get Targets Axes Names
