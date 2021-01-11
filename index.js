@@ -35,7 +35,9 @@ var m = [120, 40, 35, 40],
     inputs = [],
     outputs = [],
     targets = [],
-    csvFileName;
+    csvFileName,
+    firstOutputPosition,
+    lastInputPosition;
 
 //HSL
 var colors = {
@@ -206,7 +208,7 @@ function load_dataset(fileData) {
                 .rangePoints([h, 0], .1));
         }
     }));
-
+    
     // Add a group element for each dimension.
     var g = svg.selectAll(".dimension")
         .data(dimensions)
@@ -235,6 +237,8 @@ function load_dataset(fileData) {
                         dimensions.sort(function (a, b) {
                             return position(a) - position(b);
                         });
+
+                        reorderIOTargetArrays();                       
                     }
 
                     xscale.domain(dimensions);
@@ -635,6 +639,8 @@ function position(d) {
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
 function brush() {
+
+    lastInputPosition = xscale(inputs[inputs.length - 1]);
 
     //Line Coloring   
     //Reference Axis for coloring order
@@ -1262,7 +1268,7 @@ function drawBoxes() {
 
     let spaceBetweenAxes = xscale(inputs[1]) - xscale(inputs[0]);
     let lastOutputPosition = xscale(outputs[outputs.length - 1]);
-    let firstOutputPosition = xscale(outputs[0]);
+    firstOutputPosition = xscale(outputs[0]);
 
     //Extra Space Between last Axis and svg end.
     let extraSpace = width - lastOutputPosition - m[3] - m[1];
@@ -1374,4 +1380,25 @@ function downloadURI(uri, name) {
     link.click();
     document.body.removeChild(link);
     link.href = null;   
+}
+
+function reorderIOTargetArrays() {
+    inputs = dimensions.filter(function (axisName) {
+        let axisData = magnitudes.find(magnitudeObject => magnitudeObject.name === axisName);
+
+        return axisData.io.toLowerCase() === "input";
+    });
+
+    outputs = dimensions.filter(function (axisName) {
+        let axisData = magnitudes.find(magnitudeObject => magnitudeObject.name === axisName);
+
+        return axisData.io.toLowerCase() === "output";
+    });
+
+    targets = [];
+    dimensions.map(function (axisName) {
+        let axisData = magnitudes.find(magnitudeObject => magnitudeObject.name === axisName);
+
+        if (axisData.target !== null) targets.push(axisData);
+    });
 }
