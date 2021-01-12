@@ -329,7 +329,7 @@ function load_dataset(fileData) {
         .style("cursor", "move")
         .on("click", function (d) {           
             refAxis = d;
-
+            brush();
         })
         .append("title")
         .text("Click to change color. Drag to reorder");
@@ -393,6 +393,11 @@ function load_dataset(fileData) {
     d3.selectAll(".brush")
         .on("mousedown", function () {
             clickedOnBrush = true;
+        });
+
+    d3.selectAll(".brush")
+        .on("click", function () {
+            brush();
         });
 
     d3.selectAll(".axis-label")
@@ -627,6 +632,7 @@ function brush() {
     });
 
     //Scale if numerical or ordinal
+    console.log(refAxisValues);
     if (_.isNumber(refAxisValues[0])) {
 
         //Get Range
@@ -653,8 +659,15 @@ function brush() {
     drawBoxes();
 
     brush_count++;
-    var actives = dimensions.filter(function (p) { return !yscale[p].brush.empty(); }),
+    var actives = dimensions.filter(function (p) {
+        let name = p.replace(/ /g, "_");
+        let ext = d3.selectAll("." + name + " .extent")       
+        
+        return !yscale[p].brush.empty() && ext[0][0].attributes.height.value > 0;
+    }),
         extents = actives.map(function (p) { return yscale[p].brush.extent(); });
+
+    console.log(actives, extents);
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -735,11 +748,7 @@ function brush() {
     } else {
         d3.select("#keep-data").attr("disabled", "disabled");
         d3.select("#exclude-data").attr("disabled", "disabled");
-    };
-
-  
-
-   
+    };       
 
     drawTable(selected, data);
 
