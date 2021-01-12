@@ -37,7 +37,8 @@ var m = [120, 40, 35, 40],
     targets = [],
     csvFileName,
     firstOutputPosition,
-    lastInputPosition;
+    lastInputPosition,
+    clickedOnBrush = true;
 
 //HSL
 var colors = {
@@ -216,14 +217,15 @@ function load_dataset(fileData) {
         .attr("class", function (d) { return "dimension " + d.replace(/ /g, "_") })
         .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
         .call(d3.behavior.drag()
-            .on("dragstart", function (d) {
-                if (!brushing) {
+            .on("dragstart", function (d) {              
+
+                if (!brushing && !clickedOnBrush) {
                     dragging[d] = this.__origin__ = xscale(d);
                     this.__dragged__ = false;
                 }
             })
             .on("drag", function (d) {
-                if (!brushing) {
+                if (!brushing && !clickedOnBrush) {
                     dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
                     //Cannot drag Output to Input
                     if (magnitudes.find(x => x.name === d).io.toLowerCase() === "input") {
@@ -255,10 +257,9 @@ function load_dataset(fileData) {
                 }
             })
             .on("dragend", function (d) {
-                if (!brushing) {
+                if (!brushing && !clickedOnBrush) {
                     if (!this.__dragged__) {
-                        // no movement, invert axis                       
-                        refAxis = d;
+                        // no movement, invert axis                      
                     } else {
                         // reorder axes
                         d3.select(this).transition().attr("transform", "translate(" + xscale(d) + ")");
@@ -326,8 +327,12 @@ function load_dataset(fileData) {
         .attr("x", 0)
         .text(String)
         .style("cursor", "move")
+        .on("click", function (d) {           
+            refAxis = d;
+
+        })
         .append("title")
-        .text("Click to invert. Drag to reorder");
+        .text("Click to change color. Drag to reorder");
 
     //Tick style font
     g.selectAll(".tick")
@@ -385,7 +390,15 @@ function load_dataset(fileData) {
         .append("title")
         .text("Drag or resize this filter");
 
-    legend = create_legend(colors, brush);
+    d3.selectAll(".brush")
+        .on("mousedown", function () {
+            clickedOnBrush = true;
+        });
+
+    d3.selectAll(".axis-label")
+        .on("mousedown", function () {
+            clickedOnBrush = false;
+        })
 
     //Box shadows
     var defs = svg.append("defs");
@@ -442,47 +455,6 @@ function grayscale(pixels, args) {
     }
     return pixels;
 };
-
-function create_legend(colors, brush) {
-    // create legend
-    var legend_data = d3.select("#legend")
-        .html("")
-        .selectAll(".row")
-        .data(_.keys(colors).sort())
-
-    // filter by group
-    var legend = legend_data
-        .enter().append("div")
-        .attr("title", "Hide group")
-        .on("click", function (d) {
-            // toggle food group
-            if (_.contains(excluded_groups, d)) {
-                d3.select(this).attr("title", "Hide group")
-                excluded_groups = _.difference(excluded_groups, [d]);
-                brush();
-            } else {
-                d3.select(this).attr("title", "Show group")
-                excluded_groups.push(d);
-                brush();
-            }
-        });
-
-    legend
-        .append("span")
-        .style("background", function (d, i) { return color("test", 0.85) })
-        .attr("class", "color-bar");
-
-    legend
-        .append("span")
-        .attr("class", "tally")
-        .text(function (d, i) { return 0 });
-
-    legend
-        .append("span")
-        .text(function (d, i) { return " " + d });
-
-    return legend;
-}
 
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
@@ -765,28 +737,9 @@ function brush() {
         d3.select("#exclude-data").attr("disabled", "disabled");
     };
 
-    // total by food group
-    var tallies = _(selected)
-        .groupBy(function (d) { return d.group; })
+  
 
-    // include empty groups
-    _(colors).each(function (v, k) { tallies[k] = tallies[k] || []; });
-
-    legend
-        .style("text-decoration", function (d) { return _.contains(excluded_groups, d) ? "line-through" : null; })
-        .attr("class", function (d) {
-            return (tallies[d].length > 0)
-                ? "row"
-                : "row off";
-        });
-
-    legend.selectAll(".color-bar")
-        .style("width", function (d) {
-            return Math.ceil(600 * tallies[d].length / data.length) + "px"
-        });
-
-    legend.selectAll(".tally")
-        .text(function (d, i) { return tallies[d].length });
+   
 
     drawTable(selected, data);
 
