@@ -19,10 +19,9 @@ body {
         color: #e3e3e3;
     }
 
-#titles {
-    margin-top: 25px;
-    margin-bottom: 20px;
-    margin-left: 10px;
+#titles {  
+    margin-bottom: 10px;
+    margin-left: 40px;
 }
 
 td, th {
@@ -326,9 +325,9 @@ table {
     font-size: 17px;
 }
 
-.font-RB41 {
+.font-RB30 {
     font-family: RobotoBold;
-    font-size: 41px;
+    font-size: 30px;
 }
 
 .font-RB17 {

@@ -131,7 +131,7 @@ function base64Fontface(fontName, base64) {
 }
 
 d3.selectAll(".file-upload")
-    .style("font-size", "22px")    
+    .style("font-size", "17px")    
     .style('font-family', '"RobotoRegular"')
     .style('color', "#5e676d")       
 
