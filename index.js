@@ -546,7 +546,7 @@ function invert_axis(d) {
     }
     if (yscale[d].inverted == true) {
         if (ordinal.includes(d)) yscale[d].rangePoints([h, 0], .1);
-        else yscale[d].range([h, 0]);
+        else yscale[d].range([h -2, 2]);
 
         d3.selectAll('.label')
             .filter(function (p) { return p == d; })
@@ -554,7 +554,7 @@ function invert_axis(d) {
         yscale[d].inverted = false;
     } else {
         if (ordinal.includes(d)) yscale[d].rangePoints([0, h], .1);
-        else yscale[d].range([0, h]);
+        else yscale[d].range([2, h - 2]);
         d3.selectAll('.label')
             .filter(function (p) { return p == d; })
             .style("text-decoration", "underline");
@@ -665,7 +665,7 @@ function brush() {
         
         return !yscale[p].brush.empty() && ext[0][0].attributes.height.value > 0;
     }),
-        extents = actives.map(function (p) { return yscale[p].brush.extent(); });
+    extents = actives.map(function (p) { return yscale[p].brush.extent(); });
 
     console.log(actives, extents);
 
@@ -682,7 +682,6 @@ function brush() {
                         extent.push(b);
                     })
                 });
-
             } else {
                 d3.select(element)
                     .selectAll('text')
@@ -803,10 +802,7 @@ function update_ticks(d, extent) {
                 d3.select(this).call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
             })
     }
-
-    brush_count++;
-    show_ticks();
-
+   
     // update axes
     d3.selectAll(".axis")
         .each(function (d, i) {
@@ -828,6 +824,12 @@ function update_ticks(d, extent) {
                 .style('font-size', null)
                 .style('display', null);
         });
+
+    brush_count++;
+    brush();
+
+    //Background Lines
+    paths(data, background, brush_count, true);
 }
 
 // Rescale to new dataset domain
@@ -1158,6 +1160,7 @@ function drawTable(selected, data) {
                     // sort descending: alphabetically
                     if (!(headerClicks[d] === 1)) {
                         extent = invert_axis(d);
+                        
                     }
 
                     rows.sort(function (a, b) {
