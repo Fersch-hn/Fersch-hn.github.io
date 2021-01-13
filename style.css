@@ -304,19 +304,17 @@ button#exclude-data {
     background-color: #0c3b5e;   
 }
 
-::-webkit-scrollbar-button {   
-    height: 50px;   
-}
 
 #table {
     text-align: center;
     margin-left: 40px;
     margin-right: 40px;
+    box-shadow: 1px 1px 10px #efefef, -1px -1px 10px #efefef;
 }
 
 
 table {    
-    margin: 0 auto;
+    margin: 0 auto;   
 }
 
 /*Fonts*/
@@ -404,7 +402,8 @@ table {
 
 
 #FilterableTable {
-    overflow-y: auto;   
+    overflow-y: auto;
+    border: 1px solid #efefef;
 }
 
 
@@ -425,7 +424,7 @@ th {
     position: sticky;
     top: -1px;
     z-index: 2;
-    box-shadow: 1px 1px 1px 1px #efefef inset, 1px 1px 1px 1px #efefef;
+    box-shadow: 1px 1px 1px 1px #efefef;
     border-top: 0;
 }
 
