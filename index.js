@@ -759,8 +759,7 @@ function brush() {
 
     if (brush_count > 1) {
         updateTable();
-    }
-    
+    }    
 }
 
 // render a set of polylines on a canvas
@@ -1002,51 +1001,6 @@ function remove_axis(d, g) {
     g.attr("transform", function (p) { return "translate(" + position(p) + ")"; });
     g.filter(function (p) { return p == d; }).remove();
     update_ticks();
-}
-
-d3.select("#keep-data").on("click", keep_data);
-d3.select("#exclude-data").on("click", exclude_data);
-d3.select("#export-data").on("click", export_csv);
-d3.select("#search").on("keyup", brush);
-
-
-// Appearance toggles
-d3.select("#hide-ticks").on("click", hide_ticks);
-d3.select("#show-ticks").on("click", show_ticks);
-d3.select("#dark-theme").on("click", dark_theme);
-d3.select("#light-theme").on("click", light_theme);
-
-function hide_ticks() {
-    d3.selectAll(".axis g").style("display", "none");
-    //d3.selectAll(".axis path").style("display", "none");
-    d3.selectAll(".background").style("visibility", "hidden");
-    d3.selectAll("#hide-ticks").attr("disabled", "disabled");
-    d3.selectAll("#show-ticks").attr("disabled", null);
-};
-
-function show_ticks() {
-    d3.selectAll(".axis g").style("display", null);
-    //d3.selectAll(".axis path").style("display", null);
-    d3.selectAll(".background").style("visibility", null);
-    d3.selectAll("#show-ticks").attr("disabled", "disabled");
-    d3.selectAll("#hide-ticks").attr("disabled", null);
-};
-
-function dark_theme() {
-    d3.select("body").attr("class", "dark");
-    d3.selectAll("#dark-theme").attr("disabled", "disabled");
-    d3.selectAll("#light-theme").attr("disabled", null);
-}
-
-function light_theme() {
-    d3.select("body").attr("class", null);
-    d3.selectAll("#light-theme").attr("disabled", "disabled");
-    d3.selectAll("#dark-theme").attr("disabled", null);
-}
-
-function search(selection, str) {
-    pattern = new RegExp(str, "i")
-    return _(selection).filter(function (d) { return pattern.exec(d.name); });
 }
 
 function containsObject(obj, list) {
