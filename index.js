@@ -38,7 +38,9 @@ var m = [120, 40, 35, 40],
     csvFileName,
     firstOutputPosition,
     lastInputPosition,
-    clickedOnBrush = true;
+    clickedOnBrush = true,
+    selected,
+    rows;
 
 //HSL
 var colors = {
@@ -436,6 +438,9 @@ function load_dataset(fileData) {
 
     //Input/Output Labels
     drawLabels();
+
+    setupTable(selected, data);
+
 };
 
 
@@ -667,7 +672,6 @@ function brush() {
     }),
     extents = actives.map(function (p) { return yscale[p].brush.extent(); });
 
-    console.log(actives, extents);
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -703,7 +707,7 @@ function brush() {
         });
 
     // Get lines within extents
-    let selected = [];
+    selected = [];
     data
         .filter(function (d) {
             return !_.contains(excluded_groups, d.group);
@@ -749,10 +753,14 @@ function brush() {
         d3.select("#exclude-data").attr("disabled", "disabled");
     };       
 
-    drawTable(selected, data);
 
     // Render selected lines
     paths(selected, foreground, brush_count, true);
+
+    if (brush_count > 1) {
+        updateTable();
+    }
+    
 }
 
 // render a set of polylines on a canvas
@@ -1049,13 +1057,7 @@ function containsObject(obj, list) {
     return false;
 }
 
-function drawTable(selected, data) {
-
-    data.sort(function (a, b) {
-        if (containsObject(a, selected) && !(containsObject(b, selected))) { return -1 }
-        else if (containsObject(a, selected) && containsObject(b, selected)) { return 0; }
-        else if (!(containsObject(a, selected)) && (containsObject(b, selected))) { return 1; }
-    });
+function setupTable(selected, data) {   
 
     //Remove Existing Table
     d3.select("#table div").remove();
@@ -1097,9 +1099,7 @@ function drawTable(selected, data) {
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
 
-        .text(function (d) { return d; });
-
-    var rows, row_entries, row_entries_no_anchor, row_entries_with_anchor;
+        .text(function (d) { return d; });    
 
     // draw table body with rows
     var tableBody = table.append("tbody")
@@ -1233,6 +1233,20 @@ function drawTable(selected, data) {
                 update_ticks(d, extent);
             }
         });
+}
+
+function updateTable() {
+    rows.sort(function (a, b) {
+        if (containsObject(a, selected) && !(containsObject(b, selected))) { return -1 }
+        else if (containsObject(a, selected) && containsObject(b, selected)) { return 0; }
+        else if (!(containsObject(a, selected)) && (containsObject(b, selected))) { return 1; }
+    });
+
+    rows
+        .attr("class", function (d) {
+            if (containsObject(d, selected) && highlightSelected) return "selected";
+            else return "notSelected";
+        })
 }
 
 function drawBoxes() {
