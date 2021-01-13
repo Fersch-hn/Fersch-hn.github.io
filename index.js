@@ -955,6 +955,8 @@ window.onresize = function () {
             d3.selectAll(".axis")
                 .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
 
+        setupTable(selected, data);
+
         // render data
         brush();
 
