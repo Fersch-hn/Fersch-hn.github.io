@@ -131,7 +131,7 @@ function base64Fontface(fontName, base64) {
 }
 
 d3.selectAll(".file-upload")
-    .style("font-size", "17px")    
+    .style("font-size", "2.15vh")    
     .style('font-family', '"RobotoRegular"')
     .style('color', "#5e676d")       
 
@@ -318,7 +318,7 @@ function load_dataset(fileData) {
         .each(function (d) {
             d3.select(this).call(axis.scale(yscale[d]));
         })
-        .style("font-size", "17px")        
+        .style("font-size", "2.15vh")        
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .append("svg:text")
@@ -338,7 +338,7 @@ function load_dataset(fileData) {
 
     //Tick style font
     g.selectAll(".tick")
-        .style("font-size", "15px")     
+        .style("font-size", "1.9vh")     
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b")
 
@@ -347,7 +347,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "15px")      
+        .style("font-size", "1.9vh")      
         .style('font-family', '"RobotoRegular"')
         .style('color', "#969696")
         .attr('class', 'magnitude font-RR15 fill7')
@@ -362,7 +362,7 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "15px")        
+        .style("font-size", "1.9vh")        
         .style('font-family', '"RobotoRegular"')
         .style('color', "#4e4f4f")        
         .attr('class', 'target-value font-RR15 fill7')
@@ -967,7 +967,7 @@ window.onresize = function () {
 
         //Tick style font
         d3.selectAll(".tick")
-            .style("font-size", "15px")
+            .style("font-size", "1.9vh")
             .style('font-family', '"RobotoMedium"')
             .style('color', "#58595b")
     }    
@@ -1051,7 +1051,7 @@ function setupTable(selected, data) {
         .data(column_names)
         .enter()
         .append("th")     
-        .style("font-size", "17px")
+        .style("font-size", "1.9vh")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
 
@@ -1086,7 +1086,7 @@ function setupTable(selected, data) {
         .enter()
         .append("td")
         .text(function (d) { return d; })
-        .style("font-size", "17px")
+        .style("font-size", "1.9vh")
         .style('font-family', '"RobotoLight"')
         .style('color', "#4e4f4f");    
 
@@ -1214,9 +1214,9 @@ function drawBoxes() {
     //Extra Space Between last Axis and svg end.
     let extraSpace = width - lastOutputPosition - m[3] - m[1];
 
-    let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.6);
-    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.4) + extraSpace;
-    let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.4);
+    let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.53);
+    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace;
+    let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.47);
 
     //Inputs Box
     drawRect(m[1], wInputBox, height);
@@ -1262,7 +1262,7 @@ function drawLabels() {
         })
         .append("text")
         .attr("text-anchor", "middle")      
-        .style("font-size", "17px")        
+        .style("font-size", "2.15vh")        
         .style('font-family', '"BarlowBold"')
         .style('color', "#333333")
         .style('letter-spacing', "2px")
@@ -1277,7 +1277,7 @@ function drawLabels() {
         .append("text")
         .attr("text-anchor", "middle")
         .attr("class", "target-label")
-        .style("font-size", "17px")
+        .style("font-size", "2.15vh")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")       
         .attr("class", "fill4")
