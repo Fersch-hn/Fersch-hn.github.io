@@ -4,7 +4,7 @@
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight * .5, 240]);
 
-var m = [120, 40, 35, 40],
+var m = [120, 40, 55, 40],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
@@ -280,6 +280,8 @@ function load_dataset(fileData) {
                     xscale.domain(dimensions);
                     update_ticks(d, extent);
 
+                    drawTargetsLabels(d3.selectAll(".dimension"));
+
                     // rerender
                     d3.select("#foreground").style("opacity", null);
                     brush();
@@ -356,23 +358,7 @@ function load_dataset(fileData) {
         .text((d) => {
             let obj = magnitudes.find(m => m.name === d);
             return obj.value;
-        })
-
-    //Target    
-    g.append("svg:g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .style("font-size", "1.9vh")        
-        .style('font-family', '"RobotoRegular"')
-        .style('color', "#4e4f4f")        
-        .attr('class', 'target-value font-RR15 fill7')
-        .attr('y', -10)
-        .attr('x', 0)
-        .text((d) => {
-            let obj = magnitudes.find(m => m.name === d);
-            if (obj.target === null) { return " " }
-            else { return obj.target; }
-        });
+        })      
 
     // Add and store a brush for each axis.
     g.append("svg:g")
@@ -387,6 +373,8 @@ function load_dataset(fileData) {
             );
         })
         .selectAll("rect").call(resizeExtent);
+
+    drawTargetsLabels(g);    
 
     g.selectAll(".extent")
         .append("title")
@@ -926,8 +914,8 @@ window.onresize = function () {
             .attr("width", w + m[1] + m[3])
             .attr("height", h + m[0] + m[2])
             .select("g")
-            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
-
+            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");     
+      
         xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
         dimensions.forEach(function (d) {
             yscale[d].range([h - 2, 2], .1);
@@ -953,6 +941,8 @@ window.onresize = function () {
         axis = axis.ticks(1 + height / 50),
             d3.selectAll(".axis")
                 .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
+
+        drawTargetsLabels(d3.selectAll(".dimension"));
 
         setupTable(selected, data);
 
@@ -1238,7 +1228,7 @@ function drawRect(x, rectWidth, rectHeight) {
         .attr("x", x)
         .attr("y", 10)
         .attr("width", rectWidth)
-        .attr("height", rectHeight - 20)
+        .attr("height", rectHeight - 15)
         .attr("stroke", "#8f8f8f")
         .attr("stroke-width", "0.2")
         .attr("fill", "none")
@@ -1270,6 +1260,11 @@ function drawLabels() {
         .attr('x', 0)
         .text(String);
 
+    let targetLabelPosition = ((xscale(targets[targets.length - 1].name) - xscale(targets[0].name)) / 2) + xscale(targets[0].name);   
+
+    let axes = d3.selectAll(".brush");    
+    let axesHeight = axes[0][0].getBBox().height;
+  
     //Add Target Label   
     d3.selectAll(".target-label").remove();
     svg.append("svg:g")
@@ -1282,11 +1277,12 @@ function drawLabels() {
         .style('color', "#4e4f4f")       
         .attr("class", "fill4")
         .attr("transform", function () {
-            return "translate( " + xscale(targets[0].name) + " )";
+            console.log();
+            return "translate( " + targetLabelPosition + " )";
         })
-        .attr('y', -10)
-        .attr('x', -60)
-        .text("Target:");
+        .attr('y', axesHeight + 20)
+        .attr('x', 0)
+        .text("Targets");
 }
 
 function removeFromArrays(d) {
@@ -1353,4 +1349,28 @@ function reload() {
         var event = new Event('change');
         element.dispatchEvent(event);
     }
+}
+
+function drawTargetsLabels(g) {
+    d3.selectAll(".target-value").remove();
+
+    let axes = d3.selectAll(".brush");
+    console.log(axes);
+    let axesHeight = axes[0][0].getBBox().height;
+
+    //Target    
+    g.append("svg:g")
+        .append("text")
+        .attr("text-anchor", "middle")
+        .style("font-size", "1.9vh")
+        .style('font-family', '"RobotoRegular"')
+        .style('color', "#4e4f4f")
+        .attr('class', 'target-value font-RR15 fill7')
+        .attr('y', axesHeight + 40)
+        .attr('x', 0)
+        .text((d) => {
+            let obj = magnitudes.find(m => m.name === d);
+            if (obj.target === null) { return " " }
+            else { return obj.target; }
+        });
 }
