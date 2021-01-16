@@ -625,7 +625,6 @@ function brush() {
     });
 
     //Scale if numerical or ordinal
-    console.log(refAxisValues);
     if (_.isNumber(refAxisValues[0])) {
 
         //Get Range
@@ -779,24 +778,19 @@ function paths(selected, ctx, count) {
 
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
-    // update brushes
-    if (d) {
-        var brush_el = d3.selectAll(".brush")
-            .filter(function (key) { return key == d; });
-        // single tick
-        if (extent) {
-            // restore previous extent
-            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
-        } else {
-            brush_el.call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
-        }
-    } else {
-        // all ticks
-        d3.selectAll(".brush")
-            .each(function (d) {
-                d3.select(this).call(yscale[d].brush = d3.svg.multibrush().extentAdaption(resizeExtent).y(yscale[d]).on("brush", brush));
-            })
-    }
+    
+    //Reset Brushes
+    d3.selectAll(".brush")
+        .each(function (d) {
+            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+                .extentAdaption(resizeExtent)
+                .y(yscale[d]).on("brush", function () {
+                    brushing = true;
+                    brush();
+                })
+            );
+        })
+        .selectAll("rect").call(resizeExtent);
    
     // update axes
     d3.selectAll(".axis")
@@ -1277,7 +1271,6 @@ function drawLabels() {
         .style('color', "#4e4f4f")       
         .attr("class", "fill4")
         .attr("transform", function () {
-            console.log();
             return "translate( " + targetLabelPosition + " )";
         })
         .attr('y', axesHeight + 20)
@@ -1355,7 +1348,6 @@ function drawTargetsLabels(g) {
     d3.selectAll(".target-value").remove();
 
     let axes = d3.selectAll(".brush");
-    console.log(axes);
     let axesHeight = axes[0][0].getBBox().height;
 
     //Target    
