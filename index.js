@@ -1,5 +1,7 @@
 // Parallel Coordinates
 // Copyright (c) 2012, Kai Chang
+//Modified by Fernando Martinez and Jonathan Duncan (First-Rate Programmers, 2021)
+//For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 var width = document.body.clientWidth,
     height = d3.max([document.body.clientHeight * .5, 240]);
@@ -456,7 +458,7 @@ function grayscale(pixels, args) {
 
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
-
+   
     let isForeground = ctx === foreground;
     selection.slice(i, max).forEach(function (d) {
         let pColor;
@@ -575,7 +577,7 @@ function path(d, ctx, color) {
 */
 
 function path(d, ctx, color) {
-
+    
     if (color) ctx.strokeStyle = color;
     ctx.beginPath();
     var x0 = xscale(dimensions[0]),
@@ -730,16 +732,7 @@ function brush() {
     if (tableSelect.length > 0) {
         highlightSelected = true;
         selected = tableSelect
-    }
-
-    if (selected.length < data.length && selected.length > 0) {
-        d3.select("#keep-data").attr("disabled", null);
-        d3.select("#exclude-data").attr("disabled", null);
-    } else {
-        d3.select("#keep-data").attr("disabled", "disabled");
-        d3.select("#exclude-data").attr("disabled", "disabled");
-    };       
-
+    }  
 
     // Render selected lines
     paths(selected, foreground, brush_count, true);
@@ -758,7 +751,7 @@ function paths(selected, ctx, count) {
 
     selection_stats(opacity, n, data.length);
     shuffled_data = _.shuffle(selected);
-
+    
     data_table(shuffled_data.slice(0, 25));
     ctx.clearRect(0, 0, w + 1, h + 1);
 
@@ -812,13 +805,14 @@ function update_ticks(d, extent) {
                 .style('font-weight', null)
                 .style('font-size', null)
                 .style('display', null);
-        });
+        });   
 
     brush_count++;
     brush();
 
     //Background Lines
-    paths(data, background, brush_count, true);
+    setTimeout(function () { paths(data, background, brush_count, true) }, 1000);
+    //paths(data, background, brush_count, true);   
 }
 
 // Rescale to new dataset domain
