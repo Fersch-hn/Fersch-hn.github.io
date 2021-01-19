@@ -52,7 +52,7 @@ var colors = {
 
 // handle upload button
 function upload_button(el, callback) {
-
+    
     var uploader = document.getElementById(el);
     var reader = new FileReader();
 
@@ -181,7 +181,6 @@ function load_dataset(fileData) {
         }
         magnitudes.push(magnitudeObject);
     }
-
 
     //Create Data with clean key names
     var newData = [];
@@ -320,7 +319,18 @@ function load_dataset(fileData) {
         .attr("class", "axis font-RM15 fill4")
         .attr("transform", "translate(0,0)")
         .each(function (d) {
-            d3.select(this).call(axis.scale(yscale[d]));
+            if (_.isNumber(data[0][d])) {
+
+                let val = [];
+                data.map(function (e) {
+                    val.push(e[d]);
+                });
+                let minAndMax = d3.extent(val);                         
+               
+                let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks));
+            }
+            else d3.select(this).call(axis.scale(yscale[d]));          
         })
         .style("font-size", "2.15vh")        
         .style('font-family', '"RobotoBold"')
@@ -1370,4 +1380,13 @@ function resetBrushes() {
             );
         })
         .selectAll("rect").call(resizeExtent);
+}
+
+function getTicks(startValue, stopValue, cardinality) {
+    var arr = [];
+    var step = (stopValue - startValue) / (cardinality - 1);
+    for (var i = 0; i < cardinality; i++) {
+        arr.push(Math.round((startValue + (step * i)) * 1000) / 1000);
+    }
+    return arr;
 }
