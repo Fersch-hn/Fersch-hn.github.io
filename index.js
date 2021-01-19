@@ -420,6 +420,9 @@ function load_dataset(fileData) {
     feMerge.append("feMergeNode")
         .attr("in", "SourceGraphic");
 
+    //In case new file is loaded, this resets selection
+    tableSelect = [];
+
     // Render full foreground
     brush();
 
@@ -430,7 +433,6 @@ function load_dataset(fileData) {
     drawLabels();
 
     setupTable(selected, data);
-
 };
 
 
