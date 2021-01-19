@@ -733,6 +733,12 @@ function brush() {
     //Check tableSelections
     if (tableSelect.length > 0) {
         highlightSelected = true;
+        if (activeBrushes) {
+            selected.map(function (d) {
+                tableSelect.push(d);
+            });
+            resetBrushes();
+        }
         selected = tableSelect
     }  
 
@@ -773,20 +779,9 @@ function paths(selected, ctx, count) {
 
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
+
+    resetBrushes();
     
-    //Reset Brushes
-    d3.selectAll(".brush")
-        .each(function (d) {
-            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
-                .extentAdaption(resizeExtent)
-                .y(yscale[d]).on("brush", function () {
-                    brushing = true;
-                    brush();
-                })
-            );
-        })
-        .selectAll("rect").call(resizeExtent);
-   
     // update axes
     d3.selectAll(".axis")
         .each(function (d, i) {
@@ -813,8 +808,7 @@ function update_ticks(d, extent) {
     brush();
 
     //Background Lines
-    setTimeout(function () { paths(data, background, brush_count, true) }, 1000);
-    //paths(data, background, brush_count, true);   
+    setTimeout(function () { paths(data, background, brush_count, true) }, 1000);     
 }
 
 // Rescale to new dataset domain
@@ -1361,4 +1355,19 @@ function drawTargetsLabels(g) {
             if (obj.target === null) { return " " }
             else { return obj.target; }
         });
+}
+
+function resetBrushes() {
+    //Reset Brushes
+    d3.selectAll(".brush")
+        .each(function (d) {
+            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+                .extentAdaption(resizeExtent)
+                .y(yscale[d]).on("brush", function () {
+                    brushing = true;
+                    brush();
+                })
+            );
+        })
+        .selectAll("rect").call(resizeExtent);
 }
