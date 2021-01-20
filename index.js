@@ -356,8 +356,8 @@ function load_dataset(fileData) {
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b")
 
-    //d3.selectAll(".tick text")
-    //    .attr("x", -20);
+    d3.selectAll(".tick text")
+        .attr("x", -20);
 
     //Add Extra Labels
     //Measure Magnitudes
@@ -674,35 +674,7 @@ function brush() {
         
         return !yscale[p].brush.empty() && ext[0][0].attributes.height.value > 0;
     }),
-    extents = actives.map(function (p) { return yscale[p].brush.extent(); });    
-
-    //iterate axes with active brushes
-    actives.map(function (d, i) {
-        let brushedTicks = [];
-        let axisName = d.replace(/ /g, "_");       
-
-        //iterate brushes
-        extents[i].map(function (b) { 
-            
-            //iterate ticks           
-            d3.selectAll("." + axisName + " .tick text").each(function (t) {
-                if (_.isNumber(t)) {
-                    if (between(t, b[0], b[1])) brushedTicks.push(t);
-                }
-                else {                  
-                    let p = d3.transform(d3.select(this.parentNode).attr("transform"));                  
-                  
-                    if (between(p.translate[1], b[0], b[1])) brushedTicks.push(t); 
-                }                               
-            })           
-        });      
-
-        //Move ticks
-        d3.selectAll("." + axisName + " .tick text").attr("x", function (n) {
-            if (brushedTicks.includes(n)) return -20;            
-            else return -10;
-        })         
-    });   
+    extents = actives.map(function (p) { return yscale[p].brush.extent(); });      
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -764,9 +736,6 @@ function brush() {
         selected = data;
         highlightSelected = false;
         brushing = false;
-
-        //Return ticks to position
-        d3.selectAll(".tick text").attr("x", -10)         
     }
     else {
         highlightSelected = true;
