@@ -757,6 +757,9 @@ function brush() {
         selected = data;
         highlightSelected = false;
         brushing = false;
+
+        //Return ticks to position
+        d3.selectAll(".tick text").attr("x", -10)         
     }
     else {
         highlightSelected = true;
