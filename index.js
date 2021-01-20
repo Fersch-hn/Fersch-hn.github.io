@@ -960,7 +960,20 @@ window.onresize = function () {
         // update axis placement
         axis = axis.ticks(1 + height / 50),
             d3.selectAll(".axis")
-                .each(function (d) { d3.select(this).call(axis.scale(yscale[d])); });
+                .each(function (d) {
+                    if (_.isNumber(data[0][d])) {
+
+                        let val = [];
+                        data.map(function (e) {
+                            val.push(e[d]);
+                        });
+                        let minAndMax = d3.extent(val);
+
+                        let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+                        d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks));
+                    }
+                    else d3.select(this).call(axis.scale(yscale[d]));
+                });
 
         drawTargetsLabels(d3.selectAll(".dimension"));
 
