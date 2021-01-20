@@ -356,6 +356,9 @@ function load_dataset(fileData) {
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b")
 
+    //d3.selectAll(".tick text")
+    //    .attr("x", -20);
+
     //Add Extra Labels
     //Measure Magnitudes
     g.append("svg:g")
@@ -671,8 +674,28 @@ function brush() {
         
         return !yscale[p].brush.empty() && ext[0][0].attributes.height.value > 0;
     }),
-    extents = actives.map(function (p) { return yscale[p].brush.extent(); });
+    extents = actives.map(function (p) { return yscale[p].brush.extent(); });    
 
+    //iterate axes with active brushes
+    actives.map(function (d, i) {
+        let brushedTicks = [];
+        let axisName = d.replace(/ /g, "_");       
+
+        //iterate brushes
+        extents[i].map(function (b) { 
+            
+            //iterate ticks           
+            d3.selectAll("." + axisName + " .tick text").each(function (t) {               
+                if (between(t, b[0], b[1])) brushedTicks.push(t);                
+            })           
+        });
+
+        //Move ticks
+        d3.selectAll("." + axisName + " .tick text").attr("x", function (n) {
+            if (brushedTicks.includes(n)) return -20;            
+            else return -10;
+        })         
+    });   
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -1389,4 +1412,8 @@ function getTicks(startValue, stopValue, cardinality) {
         arr.push(Math.round((startValue + (step * i)) * 1000) / 1000);
     }
     return arr;
+}
+
+function between(x, min, max) {
+    return x >= min && x <= max;
 }
