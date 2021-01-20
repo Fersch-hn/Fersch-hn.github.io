@@ -685,10 +685,17 @@ function brush() {
         extents[i].map(function (b) { 
             
             //iterate ticks           
-            d3.selectAll("." + axisName + " .tick text").each(function (t) {               
-                if (between(t, b[0], b[1])) brushedTicks.push(t);                
+            d3.selectAll("." + axisName + " .tick text").each(function (t) {
+                if (_.isNumber(t)) {
+                    if (between(t, b[0], b[1])) brushedTicks.push(t);
+                }
+                else {                  
+                    let p = d3.transform(d3.select(this.parentNode).attr("transform"));                  
+                  
+                    if (between(p.translate[1], b[0], b[1])) brushedTicks.push(t); 
+                }                               
             })           
-        });
+        });      
 
         //Move ticks
         d3.selectAll("." + axisName + " .tick text").attr("x", function (n) {
