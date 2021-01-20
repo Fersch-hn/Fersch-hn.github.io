@@ -935,11 +935,12 @@ window.onresize = function () {
             .attr("height", h + m[0] + m[2])
             .select("g")
             .attr("transform", "translate(" + m[3] + "," + m[0] + ")");     
-      
+       
         xscale = d3.scale.ordinal().rangePoints([0, w], 1).domain(dimensions);
-        dimensions.forEach(function (d) {
-            yscale[d].range([h - 2, 2], .1);
-        });
+        dimensions.forEach(function (d) {            
+            if (_.isNumber(data[0][d])) yscale[d].range([h - 2, 2]);
+            else yscale[d].rangePoints([h, 0], .1);               
+        });  
 
         d3.selectAll(".dimension")
             .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
@@ -958,9 +959,11 @@ window.onresize = function () {
         brush_count++;
 
         // update axis placement
-        axis = axis.ticks(1 + height / 50),
+        axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
             d3.selectAll(".axis")
                 .each(function (d) {
+                    console.log(_.isNumber(data[0][d]), d);
+
                     if (_.isNumber(data[0][d])) {
 
                         let val = [];
@@ -972,8 +975,8 @@ window.onresize = function () {
                         let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
                         d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks));
                     }
-                    else d3.select(this).call(axis.scale(yscale[d]));
-                });
+                    else { console.log("h"); d3.select(this).call(axis.scale(yscale[d]).ticks(1 + height / 50)); }
+                });   
 
         drawTargetsLabels(d3.selectAll(".dimension"));
 
