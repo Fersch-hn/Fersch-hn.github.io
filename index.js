@@ -328,9 +328,9 @@ function load_dataset(fileData) {
                 let minAndMax = d3.extent(val);                         
                
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
-                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks));
+                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
             }
-            else d3.select(this).call(axis.scale(yscale[d]));          
+            else d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));          
         })
         .style("font-size", "2.15vh")        
         .style('font-family', '"RobotoBold"')
@@ -356,8 +356,8 @@ function load_dataset(fileData) {
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b")
 
-    d3.selectAll(".tick text")
-        .attr("x", -20);
+    //d3.selectAll(".tick text")
+    //    .attr("x", -20);
 
     //Add Extra Labels
     //Measure Magnitudes
@@ -793,7 +793,10 @@ function paths(selected, ctx, count) {
 function update_ticks(d, extent) {
 
     resetBrushes();
-    
+
+    axis = d3.svg.axis().orient("left").ticks(1 + height / 50); 
+
+   
     // update axes
     d3.selectAll(".axis")
         .each(function (d, i) {
@@ -801,11 +804,30 @@ function update_ticks(d, extent) {
             d3.select(this).selectAll('line').style("display", "none");
 
             // transition axis numbers
-            d3.select(this)
-                .transition()
-                .duration(720)
-                .call(axis.scale(yscale[d]));
+            if (_.isNumber(data[0][d])) {
 
+                let val = [];
+                data.map(function (e) {
+                    val.push(e[d]);
+                });
+                let minAndMax = d3.extent(val);
+
+                let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+
+                d3.select(this)
+                    .transition()
+                    .duration(720)
+                    .call(axis.scale(yscale[d])
+                        .tickValues(ticks).tickPadding([15]));
+            }
+            else {
+                d3.select(this)
+                    .transition()
+                    .duration(720)
+                    .call(axis.scale(yscale[d])
+                        .ticks(1 + height / 50).tickPadding([15]));
+            }           
+            
             // bring lines back
             d3.select(this).selectAll('line').transition().delay(800).style("display", null);
 
@@ -937,9 +959,7 @@ window.onresize = function () {
         // update axis placement
         axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
             d3.selectAll(".axis")
-                .each(function (d) {
-                    console.log(_.isNumber(data[0][d]), d);
-
+                .each(function (d) {                    
                     if (_.isNumber(data[0][d])) {
 
                         let val = [];
@@ -949,9 +969,9 @@ window.onresize = function () {
                         let minAndMax = d3.extent(val);
 
                         let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
-                        d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks));
+                        d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
                     }
-                    else { console.log("h"); d3.select(this).call(axis.scale(yscale[d]).ticks(1 + height / 50)); }
+                    else { d3.select(this).call(axis.scale(yscale[d]).ticks(1 + height / 50).tickPadding([15])); }
                 });   
 
         drawTargetsLabels(d3.selectAll(".dimension"));
