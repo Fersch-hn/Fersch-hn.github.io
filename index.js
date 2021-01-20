@@ -332,7 +332,7 @@ function load_dataset(fileData) {
             }
             else d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));          
         })
-        .style("font-size", "2.15vh")        
+        .style("font-size", "1.901vh")        
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .append("svg:text")
@@ -352,19 +352,16 @@ function load_dataset(fileData) {
 
     //Tick style font
     g.selectAll(".tick")
-        .style("font-size", "1.9vh")     
+        .style("font-size", "1.774vh")     
         .style('font-family', '"RobotoMedium"')
-        .style('color', "#58595b")
-
-    //d3.selectAll(".tick text")
-    //    .attr("x", -20);
+        .style('color', "#58595b")  
 
     //Add Extra Labels
     //Measure Magnitudes
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "1.9vh")      
+        .style("font-size", "1.823")      
         .style('font-family', '"RobotoRegular"')
         .style('color', "#969696")
         .attr('class', 'magnitude font-RR15 fill7')
@@ -989,7 +986,7 @@ window.onresize = function () {
 
         //Tick style font
         d3.selectAll(".tick")
-            .style("font-size", "1.9vh")
+            .style("font-size", "1.774vh")
             .style('font-family', '"RobotoMedium"')
             .style('color', "#58595b")
     }    
@@ -1304,7 +1301,7 @@ function drawLabels() {
         .append("text")
         .attr("text-anchor", "middle")
         .attr("class", "target-label")
-        .style("font-size", "2.15vh")
+        .style("font-size", "1.901vh")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")       
         .attr("class", "fill4")
@@ -1313,7 +1310,7 @@ function drawLabels() {
         })
         .attr('y', axesHeight + 20)
         .attr('x', 0)
-        .text("Targets");
+        .text("TARGETS");
 }
 
 function removeFromArrays(d) {
@@ -1392,7 +1389,7 @@ function drawTargetsLabels(g) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "1.9vh")
+        .style("font-size", "1.774vh")
         .style('font-family', '"RobotoRegular"')
         .style('color', "#4e4f4f")
         .attr('class', 'target-value font-RR15 fill7')
