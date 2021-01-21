@@ -912,7 +912,7 @@ window.onresize = function () {
     
     if (axes[0].length > 1) {
         width = document.body.clientWidth,
-            height = d3.max([document.body.clientHeight * .5, 240]);
+            height = d3.max([document.body.clientHeight * .55, 240]);
 
         w = width - m[1] - m[3],
             h = height - m[0] - m[2];
