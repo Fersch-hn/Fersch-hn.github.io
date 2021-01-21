@@ -4,9 +4,9 @@
 //For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 var width = document.body.clientWidth,
-    height = d3.max([document.body.clientHeight * .5, 240]);
+    height = d3.max([document.body.clientHeight * .55, 240]);
 
-var m = [120, 40, 55, 40],
+var m = [120, 40, 70, 40],
     w = width - m[1] - m[3],
     h = height - m[0] - m[2],
     xscale = d3.scale.ordinal().rangePoints([0, w], 1),
@@ -379,8 +379,11 @@ function load_dataset(fileData) {
             d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
                 .extentAdaption(resizeExtent)
                 .y(yscale[d]).on("brush", function () {
-                    brushing = true;
-                    brush();
+                    if (tableSelect.length === 0) {
+                        brushing = true;
+                        brush();
+                    }
+                   
                 })
             );
         })
@@ -945,8 +948,10 @@ window.onresize = function () {
                 d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
                     .extentAdaption(resizeExtent)
                     .y(yscale[d]).on("brush", function () {
-                        brushing = true;
-                        brush();
+                        if (tableSelect.length === 0) {
+                            brushing = true;
+                            brush();
+                        }
                     })
                 );
             })
@@ -1274,7 +1279,7 @@ function drawLabels() {
     svg.selectAll(".dimensionIO")
         .data(labels)
         .enter().append("svg:g")
-        .attr("class", "dimensionIO")
+        .attr("class", "dimensionIO fill3")
         .attr("transform", function (d, i) {
             if (d === "INPUTS") return "translate( " + inputLabelPosition + " )";
             else if (d === "OUTPUTS") return "translate( " + outputLabelPosition + " )";
@@ -1283,7 +1288,7 @@ function drawLabels() {
         .attr("text-anchor", "middle")      
         .style("font-size", "2.15vh")        
         .style('font-family', '"BarlowBold"')
-        .style('color', "#333333")
+        .style('color', "#4e4f4f")
         .style('letter-spacing', "2px")
         .attr('y', -80)
         .attr('x', 0)
@@ -1301,6 +1306,7 @@ function drawLabels() {
         .append("text")
         .attr("text-anchor", "middle")
         .attr("class", "target-label")
+        .style('letter-spacing', "2px")
         .style("font-size", "1.901vh")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")       
@@ -1308,7 +1314,7 @@ function drawLabels() {
         .attr("transform", function () {
             return "translate( " + targetLabelPosition + " )";
         })
-        .attr('y', axesHeight + 20)
+        .attr('y', axesHeight + 30)
         .attr('x', 0)
         .text("TARGETS");
 }
@@ -1393,7 +1399,7 @@ function drawTargetsLabels(g) {
         .style('font-family', '"RobotoRegular"')
         .style('color', "#4e4f4f")
         .attr('class', 'target-value font-RR15 fill7')
-        .attr('y', axesHeight + 40)
+        .attr('y', axesHeight + 50)
         .attr('x', 0)
         .text((d) => {
             let obj = magnitudes.find(m => m.name === d);
