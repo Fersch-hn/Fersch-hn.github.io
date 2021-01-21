@@ -314,6 +314,8 @@ function load_dataset(fileData) {
     //Get Targets Axes Names
     targets = magnitudes.filter(x => x.target !== null);
 
+    axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
+
     // Add an axis and title.
     g.append("svg:g")
         .attr("class", "axis font-RM15 fill4")
@@ -382,8 +384,7 @@ function load_dataset(fileData) {
                     if (tableSelect.length === 0) {
                         brushing = true;
                         brush();
-                    }
-                   
+                    }                   
                 })
             );
         })
