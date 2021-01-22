@@ -211,8 +211,30 @@ function load_dataset(fileData) {
                 .domain(data.map(function (d) { ordinal.push(k); return d[k]; }))
                 .rangePoints([h, 0], .1));
         }
-    }));
-    
+    }));   
+
+    //Group for Inputs and Outputs
+    var columnKeys = Object.keys(data[0]);
+
+    inputs = [];
+    outputs = [];
+    columnKeys.map(function (d) {
+        let obj = magnitudes.find(m => m.name === d);
+
+        if (obj.io.toLowerCase() === "input") inputs.push(d);
+        else if (obj.io.toLowerCase() === "output") outputs.push(d);
+    });
+
+    //Get Targets Axes Names
+    targets = magnitudes.filter(x => x.target !== null);
+
+
+
+    //Remove existing Boxes
+    d3.selectAll(".box").remove();
+    drawBoxes();
+
+
     // Add a group element for each dimension.
     var g = svg.selectAll(".dimension")
         .data(dimensions)
@@ -299,22 +321,10 @@ function load_dataset(fileData) {
                 }
             }))
 
-    //Group for Inputs and Outputs
-    var columnKeys = Object.keys(data[0]);
 
-    inputs = [];
-    outputs = [];
-    columnKeys.map(function (d) {
-        let obj = magnitudes.find(m => m.name === d);
 
-        if (obj.io.toLowerCase() === "input") inputs.push(d);
-        else if (obj.io.toLowerCase() === "output") outputs.push(d);
-    });
-
-    //Get Targets Axes Names
-    targets = magnitudes.filter(x => x.target !== null);
-
-    axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
+  
+    axis = d3.svg.axis().orient("left").ticks(1 + height / 50);   
 
     // Add an axis and title.
     g.append("svg:g")
@@ -409,30 +419,7 @@ function load_dataset(fileData) {
     d3.selectAll(".axis-label")
         .on("mousedown", function () {
             clickedOnBrush = false;
-        })
-
-    //Box shadows
-    var defs = svg.append("defs");
-
-    var filter = defs.append("filter")
-        .attr("id", "dropshadow")
-
-    filter.append("feGaussianBlur")
-        .attr("in", "SourceAlpha")
-        .attr("stdDeviation", 4)
-        .attr("result", "blur");
-    filter.append("feOffset")
-        .attr("in", "blur")
-        .attr("dx", 2)
-        .attr("dy", 2)
-        .attr("result", "offsetBlur");
-
-    var feMerge = filter.append("feMerge");
-
-    feMerge.append("feMergeNode")
-        .attr("in", "offsetBlur")
-    feMerge.append("feMergeNode")
-        .attr("in", "SourceGraphic");
+        })  
 
     //In case new file is loaded, this resets selection
     tableSelect = [];
@@ -447,6 +434,8 @@ function load_dataset(fileData) {
     drawLabels();
 
     setupTable(selected, data);
+    g.moveToFront();
+   
 };
 
 
@@ -664,10 +653,7 @@ function brush() {
             .range(["#98c11d", "#0c74bb", "#33735f", "#0c3c5e", "#032135"]);
     }
 
-    //Remove existing Boxes
-    d3.selectAll(".box").remove();
-    drawBoxes();
-
+    
     brush_count++;
     var actives = dimensions.filter(function (p) {
         let name = p.replace(/ /g, "_");
@@ -1239,10 +1225,11 @@ function drawBoxes() {
     //Extra Space Between last Axis and svg end.
     let extraSpace = width - lastOutputPosition - m[3] - m[1];
 
-    let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.53);
-    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace;
+    let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.53) + m[1];
+    //let wInputBox = xscale(inputs[inputs.length - 1]) - xscale(inputs[0]) + extraSpace + (spaceBetweenAxes * 0.53);
+   
     let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.47);
-
+    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace + xOutputRect;
     //Inputs Box
     drawRect(m[1], wInputBox, height);
 
@@ -1257,17 +1244,54 @@ function resizeExtent(selection) {
 }
 
 function drawRect(x, rectWidth, rectHeight) {
+   
+    //left line
     d3.select("svg")
-        .append("rect")
+        .append("line")
         .attr("class", "box")
-        .attr("x", x)
-        .attr("y", 10)
-        .attr("width", rectWidth)
-        .attr("height", rectHeight - 15)
-        .attr("stroke", "#8f8f8f")
-        .attr("stroke-width", "0.2")
-        .attr("fill", "none")
-        .attr("filter", "url(#dropshadow)");
+        .attr("x1", x )
+        .attr("y1", 10)
+        .attr("x2", x)
+        .attr("y2", rectHeight - 15)       
+        .attr("stroke", "rgba(173, 173, 173, 0.5)")
+        .attr("stroke-width", "1")      
+        .attr("filter", "url(#dropshadow)")
+
+    //Superior Line
+    d3.select("svg")
+        .append("line")
+        .attr("class", "box")
+        .attr("x1", x)
+        .attr("y1", 10)
+        .attr("x2", rectWidth)
+        .attr("y2", 10)
+        .attr("stroke", "rgba(173, 173, 173, 0.5)")
+        .attr("stroke-width", "1")
+        .attr("filter", "url(#dropshadow2)")
+
+    //Right Line
+    d3.select("svg")
+        .append("line")
+        .attr("class", "box")
+        .attr("x1", rectWidth)
+        .attr("y1", 10)
+        .attr("x2", rectWidth)
+        .attr("y2", rectHeight - 15)
+        .attr("stroke", "rgba(173, 173, 173, 0.5)")
+        .attr("stroke-width", "1")
+        .attr("filter", "url(#dropshadow2)")
+
+    //Inferior Line
+    d3.select("svg")
+        .append("line")
+        .attr("class", "box")
+        .attr("x1", x)
+        .attr("y1", rectHeight - 15)
+        .attr("x2", rectWidth)
+        .attr("y2", rectHeight - 15)
+        .attr("stroke", "rgba(173, 173, 173, 0.5)")
+        .attr("stroke-width", "1")
+        .attr("filter", "url(#dropshadow)")    
 }
 
 function drawLabels() {

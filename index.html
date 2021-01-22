@@ -36,7 +36,20 @@
         <canvas id="background"></canvas>
         <canvas id="foreground"></canvas>
         <canvas id="highlight"></canvas>
-        <svg></svg>
+        <svg>
+            <defs>
+                <filter id="dropshadow" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="-2" dy="2" stdDeviation="3" flood-color="gray" />
+                </filter>
+                <filter id="dropshadow2" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="2" dy="-2" stdDeviation="3" flood-color="gray" />
+                </filter>               
+            </defs>
+            <mask id="myMask" maskContentUnits="objectBoundingBox">
+                <rect fill="white" x="-10%" y="-10%" width="120%" height="120%" />
+                <polygon fill="black" points="0.015,0.015 0.985,0.015 0.985,0.985 0.015,0.985 0.015,0.015" />
+            </mask>
+        </svg>
     </div>
 
     <div id="table" class="mainDiv">
