@@ -228,13 +228,6 @@ function load_dataset(fileData) {
     //Get Targets Axes Names
     targets = magnitudes.filter(x => x.target !== null);
 
-
-
-    //Remove existing Boxes
-    d3.selectAll(".box").remove();
-    drawBoxes();
-
-
     // Add a group element for each dimension.
     var g = svg.selectAll(".dimension")
         .data(dimensions)
@@ -314,6 +307,10 @@ function load_dataset(fileData) {
 
                     //Input/Output Label
                     drawLabels();
+
+                    //Remove existing Boxes
+                    d3.selectAll(".box").remove();
+                    drawBoxes();
 
                     delete this.__dragged__;
                     delete this.__origin__;
@@ -431,6 +428,10 @@ function load_dataset(fileData) {
     drawLabels();
 
     setupTable(selected, data);   
+
+    //Remove existing Boxes
+    d3.selectAll(".box").remove();
+    drawBoxes();
 };
 
 
@@ -974,6 +975,10 @@ window.onresize = function () {
 
         //Input/Output Labels
         drawLabels();
+
+        //Remove existing Boxes
+        d3.selectAll(".box").remove();
+        drawBoxes();
 
         //Tick style font
         d3.selectAll(".tick")
