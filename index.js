@@ -319,12 +319,7 @@ function load_dataset(fileData) {
                     delete this.__origin__;
                     delete dragging[d];
                 }
-            }))
-
-
-
-  
-    axis = d3.svg.axis().orient("left").ticks(1 + height / 50);   
+            })) 
 
     // Add an axis and title.
     g.append("svg:g")
@@ -337,12 +332,15 @@ function load_dataset(fileData) {
                 data.map(function (e) {
                     val.push(e[d]);
                 });
-                let minAndMax = d3.extent(val);                         
-               
+                let minAndMax = d3.extent(val);
+
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
                 d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
             }
-            else d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));          
+            else {
+                axis = d3.svg.axis().orient("left").ticks(1 + height / 50);  
+                d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));
+            }
         })
         .style("font-size", "1.901vh")        
         .style('font-family', '"RobotoBold"')
@@ -395,8 +393,7 @@ function load_dataset(fileData) {
                         brushing = true;
                         brush();
                     }                   
-                })
-            );
+                }));
         })
         .selectAll("rect").call(resizeExtent);
 
@@ -433,9 +430,7 @@ function load_dataset(fileData) {
     //Input/Output Labels
     drawLabels();
 
-    setupTable(selected, data);
-    g.moveToFront();
-   
+    setupTable(selected, data);   
 };
 
 
@@ -781,7 +776,7 @@ function update_ticks(d, extent) {
 
     resetBrushes();
 
-    axis = d3.svg.axis().orient("left").ticks(1 + height / 50); 
+    
 
    
     // update axes
@@ -808,6 +803,7 @@ function update_ticks(d, extent) {
                         .tickValues(ticks).tickPadding([15]));
             }
             else {
+                axis = d3.svg.axis().orient("left").ticks(1 + height / 50); 
                 d3.select(this)
                     .transition()
                     .duration(720)
@@ -946,7 +942,7 @@ window.onresize = function () {
         brush_count++;
 
         // update axis placement
-        axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
+      
             d3.selectAll(".axis")
                 .each(function (d) {                    
                     if (_.isNumber(data[0][d])) {
@@ -960,7 +956,10 @@ window.onresize = function () {
                         let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
                         d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
                     }
-                    else { d3.select(this).call(axis.scale(yscale[d]).ticks(1 + height / 50).tickPadding([15])); }
+                    else {
+                        axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
+                        d3.select(this).call(axis.scale(yscale[d]).ticks(1 + height / 50).tickPadding([15]));
+                    }
                 });   
 
         drawTargetsLabels(d3.selectAll(".dimension"));
