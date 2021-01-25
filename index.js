@@ -385,7 +385,7 @@ function load_dataset(fileData) {
         .each(function (d) {
             d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
                 .extentAdaption(resizeExtent)
-                .y(yscale[d]).on("brush", function () {
+                .y(yscale[d]).on("brush", function () {                 
                     if (tableSelect.length === 0) {
                         brushing = true;
                         brush();
@@ -706,11 +706,11 @@ function brush() {
                     else return e[0] <= yscale[p](d[p]) && yscale[p](d[p]) <= e[1];                                   
                 })
             }) ? selected.push(d) : null;
-        });      
+        });    
 
     //Check if there any rects/extents in Axis
     var activeBrushes;
-    var extentRects = d3.selectAll(".extent");
+    var extentRects = d3.selectAll(".extent");  
     var activeBrushes = extentRects[0].some(function (d) {
         return d.attributes.height.value > 0;
     });
@@ -735,7 +735,7 @@ function brush() {
             resetBrushes();
         }
         selected = tableSelect
-    }  
+    }
 
     // Render selected lines
     paths(selected, foreground, brush_count, true);
@@ -931,8 +931,8 @@ window.onresize = function () {
             .each(function (d) {
                 d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
                     .extentAdaption(resizeExtent)
-                    .y(yscale[d]).on("brush", function () {
-                        if (tableSelect.length === 0) {
+                    .y(yscale[d]).on("brush", function () {                        
+                        if (tableSelect.length === 0) {                           
                             brushing = true;
                             brush();
                         }
@@ -1444,8 +1444,10 @@ function resetBrushes() {
             d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
                 .extentAdaption(resizeExtent)
                 .y(yscale[d]).on("brush", function () {
-                    brushing = true;
-                    brush();
+                    if (tableSelect.length === 0) {
+                        brushing = true;
+                        brush();
+                    }
                 })
             );
         })
