@@ -1221,17 +1221,36 @@ function updateTable() {
 }
 
 function drawBoxes() {
+    let lastOutputPosition;
+    if (outputs.length > 0 || inputs.length > 1) {
+        firstOutputPosition = xscale(outputs[0]);
+        lastOutputPosition = xscale(outputs[outputs.length - 1]);
+    }
+    else {
+        firstOutputPosition = width * 0.97;
+        lastOutputPosition = width * 0.97;
+    }
 
-    let spaceBetweenAxes = xscale(inputs[1]) - xscale(inputs[0]);
-    let lastOutputPosition = xscale(outputs[outputs.length - 1]);
-    firstOutputPosition = xscale(outputs[0]);
+    let firstInputPosition = xscale(inputs[0]);
+    let lastInputPosition = xscale(inputs[inputs.length - 1]);
 
+    console.log(dimensions);
+    var spaceBetweenAxes = 0.8;
+    console.log(!(dimensions.length === 1), spaceBetweenAxes);
+
+    if (!(dimensions.length === 1)) spaceBetweenAxes = xscale(dimensions[1]) - xscale(dimensions[0]);
+    //else spaceBetweenAxes = 1;
+    console.log(spaceBetweenAxes);
+   
+   
     //Extra Space Between last Axis and svg end.
     let extraSpace = width - lastOutputPosition - m[3] - m[1];
 
-    let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.53) + m[1];
-    //let wInputBox = xscale(inputs[inputs.length - 1]) - xscale(inputs[0]) + extraSpace + (spaceBetweenAxes * 0.53);
-   
+    //let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.53) + m[1];
+    let wInputBox = lastInputPosition - firstInputPosition + (spaceBetweenAxes * 0.47) + extraSpace + m[1];
+
+
+    console.log(spaceBetweenAxes);
     let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.47);
     let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace + xOutputRect;
     //Inputs Box
@@ -1248,7 +1267,7 @@ function resizeExtent(selection) {
 }
 
 function drawRect(x, rectWidth, rectHeight) {
-   
+    console.log(x, rectWidth, rectHeight);
     //left line
     d3.select("svg")
         .append("line")
@@ -1299,8 +1318,14 @@ function drawRect(x, rectWidth, rectHeight) {
 }
 
 function drawLabels() {
-    let inputLabelPosition = xscale(inputs[inputs.length - 1]) - ((xscale(inputs[inputs.length - 1]) - xscale(inputs[0])) / 2);
-    let outputLabelPosition = xscale(outputs[outputs.length - 1]) - ((xscale(outputs[outputs.length - 1]) - xscale(outputs[0])) / 2);
+    
+    let inputLabelPosition;
+    if (!inputs.length <= 0) inputLabelPosition = xscale(inputs[inputs.length - 1]) - ((xscale(inputs[inputs.length - 1]) - xscale(inputs[0])) / 2);
+    else inputLabelPosition = width * 0.3;
+
+    let outputLabelPosition
+    if (!outputs.length <= 0) outputLabelPosition = xscale(outputs[outputs.length - 1]) - ((xscale(outputs[outputs.length - 1]) - xscale(outputs[0])) / 2);
+    else outputLabelPosition = width * 0.90;
 
     // Add a Label for each input output.  
     d3.selectAll(".dimensionIO").remove();
@@ -1323,7 +1348,12 @@ function drawLabels() {
         .attr('x', 0)
         .text(String);
 
-    let targetLabelPosition = ((xscale(targets[targets.length - 1].name) - xscale(targets[0].name)) / 2) + xscale(targets[0].name);   
+
+    let targetLabelPosition
+    if (!targets.length <= 0) targetLabelPosition = ((xscale(targets[targets.length - 1].name) - xscale(targets[0].name)) / 2) + xscale(targets[0].name);   
+    else targetLabelPosition = 0;   
+
+    
 
     let axes = d3.selectAll(".brush");    
     let axesHeight = axes[0][0].getBBox().height;
@@ -1345,7 +1375,10 @@ function drawLabels() {
         })
         .attr('y', axesHeight + 30)
         .attr('x', 0)
-        .text("TARGETS");
+        .text(function () {
+            if (!targets.length <= 0) return "TARGETS";
+            else return " ";           
+        });
 }
 
 function removeFromArrays(d) {
@@ -1407,11 +1440,13 @@ function reorderIOTargetArrays() {
 function reload() {
     let axes = d3.selectAll(".dimension");
   
-    if (axes[0].length > 1) {
+    if (axes[0].length > 0) {
         var element = document.getElementById('uploader');
         var event = new Event('change');
         element.dispatchEvent(event);
     }
+
+    debugger;
 }
 
 function drawTargetsLabels(g) {
