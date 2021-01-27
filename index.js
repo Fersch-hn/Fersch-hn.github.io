@@ -1446,7 +1446,7 @@ function reload() {
 function drawTargetsLabels(g) {
     d3.selectAll(".target-value").remove();
 
-    let axes = d3.selectAll(".brush");
+    let axes = d3.selectAll(".axis");
     let axesHeight = axes[0][0].getBBox().height;
 
     //Target    
@@ -1457,7 +1457,7 @@ function drawTargetsLabels(g) {
         .style('font-family', '"RobotoRegular"')
         .style('color', "#4e4f4f")
         .attr('class', 'target-value font-RR15 fill7')
-        .attr('y', axesHeight + 50)
+        .attr('y', axesHeight - 15)
         .attr('x', 0)
         .text((d) => {
             let obj = magnitudes.find(m => m.name === d);
