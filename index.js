@@ -69,6 +69,7 @@ function upload_button(el, callback) {
         var fileName = uploader.files[0].name;
         if (!(/\.(csv)$/i).test(fileName)) {
             document.getElementById('file-span').innerHTML = fileName + " - Please Upload a CSV";
+            alert("You upload a non .csv file. Please try again loading a .csv file");
             return;
         }
 
