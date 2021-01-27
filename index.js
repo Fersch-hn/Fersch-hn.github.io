@@ -399,8 +399,9 @@ function load_dataset(fileData) {
         });
 
     d3.selectAll(".axis-label")
-        .on("mousedown", function () {
+        .on("mousedown", function () {           
             clickedOnBrush = false;
+            brushing = false;
         })  
 
     //In case new file is loaded, this resets selection
@@ -740,6 +741,8 @@ function brush() {
     } else if (currentBrushes[0].length === 0) {
         setupBrushes();
     }
+
+    console.log(clickedOnBrush);
 
     // Render selected lines
     paths(selected, foreground, brush_count, true);
