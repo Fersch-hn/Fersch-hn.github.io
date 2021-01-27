@@ -383,7 +383,8 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .attr("class", "brush")
         .each(function (d) {
-            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+            d3.select(this).call(yscale[d].brush = 
+                d3.svg.multibrush()
                 .extentAdaption(resizeExtent)
                 .y(yscale[d]).on("brush", function () {                 
                     if (tableSelect.length === 0) {
@@ -613,6 +614,29 @@ function position(d) {
 // Handles a brush event, toggling the display of foreground lines.
 // TODO refactor
 function brush() {
+
+    //Remove Brushes when table Selection
+    let currentBrushes = d3.selectAll(".brush");
+    
+    if (tableSelect.length > 0) {
+        currentBrushes.remove();
+    }
+    else if (currentBrushes[0].length === 0) {
+        svg.selectAll(".dimension").append("svg:g")
+            .attr("class", "brush")
+            .each(function (d) {
+                d3.select(this).call(yscale[d].brush =
+                    d3.svg.multibrush()
+                        .extentAdaption(resizeExtent)
+                        .y(yscale[d]).on("brush", function () {
+                            if (tableSelect.length === 0) {
+                                brushing = true;
+                                brush();
+                            }
+                        }));
+            })
+            .selectAll("rect").call(resizeExtent);
+    }
 
     lastInputPosition = xscale(inputs[inputs.length - 1]);
 
