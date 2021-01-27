@@ -135,9 +135,9 @@ function base64Fontface(fontName, base64) {
 }
 
 d3.selectAll(".file-upload")
-    .style("font-size", "2.15vh")    
+    .style("font-size", "2.15vmin")    
     .style('font-family', '"RobotoRegular"')
-    .style('color', "#5e676d")       
+    .style('color', "#5e676d")         
 
 // Load the data and visualization
 function load_dataset(fileData) {
@@ -322,7 +322,7 @@ function load_dataset(fileData) {
 
     // Add an axis and title.
     g.append("svg:g")
-        .attr("class", "axis font-RM15 fill4")
+        .attr("class", "axis fill4")
         .attr("transform", "translate(0,0)")
         .each(function (d) {
             if (_.isNumber(data[0][d])) {
@@ -341,7 +341,7 @@ function load_dataset(fileData) {
                 d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));
             }
         })
-        .style("font-size", "1.901vh")        
+        .style("font-size", "1.90vmin")        
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .append("svg:text")
@@ -361,7 +361,7 @@ function load_dataset(fileData) {
 
     //Tick style font
     g.selectAll(".tick")
-        .style("font-size", "1.774vh")     
+        .style("font-size", "1.774vmin")     
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b")  
 
@@ -370,16 +370,16 @@ function load_dataset(fileData) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "1.823")      
+        .style("font-size", "1.774vmin")      
         .style('font-family', '"RobotoRegular"')
         .style('color', "#969696")
-        .attr('class', 'magnitude font-RR15 fill7')
+        .attr('class', 'magnitude font-RR14 fill7')
         .attr('y', -30)
         .attr('x', 0)
         .text((d) => {
             let obj = magnitudes.find(m => m.name === d);
             return obj.value;
-        })      
+        })        
 
     // Add and store a brush for each axis.
     setupBrushes();
@@ -980,7 +980,7 @@ window.onresize = function () {
 
         //Tick style font
         d3.selectAll(".tick")
-            .style("font-size", "1.774vh")
+            .style("font-size", "1.774vmin")
             .style('font-family', '"RobotoMedium"')
             .style('color', "#58595b")
     }    
@@ -1064,7 +1064,7 @@ function setupTable(selected, data) {
         .data(column_names)
         .enter()
         .append("th")     
-        .style("font-size", "1.9vh")
+        .style("font-size", "1.9vmin")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
 
@@ -1099,7 +1099,7 @@ function setupTable(selected, data) {
         .enter()
         .append("td")
         .text(function (d) { return d; })
-        .style("font-size", "1.9vh")
+        .style("font-size", "1.9vmin")
         .style('font-family', '"RobotoLight"')
         .style('color', "#4e4f4f");    
 
@@ -1338,10 +1338,11 @@ function drawLabels() {
         })
         .append("text")
         .attr("text-anchor", "middle")      
-        .style("font-size", "2.15vh")        
+        .style("font-size", "2.15vmin")        
         .style('font-family', '"BarlowBold"')
         .style('color', "#4e4f4f")
         .style('letter-spacing', "2px")
+        .attr("class", "font-BB17")
         .attr('y', -80)
         .attr('x', 0)
         .text(String);
@@ -1361,10 +1362,10 @@ function drawLabels() {
         .attr("text-anchor", "middle")
         .attr("class", "target-label")
         .style('letter-spacing', "2px")
-        .style("font-size", "1.901vh")
+        .style("font-size", "1.901vmin")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")       
-        .attr("class", "fill4")
+        .attr("class", "fill4 font-RB15")
         .attr("transform", function () {
             return "translate( " + targetLabelPosition + " )";
         })
@@ -1452,10 +1453,10 @@ function drawTargetsLabels(g) {
     g.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "1.774vh")
+        .style("font-size", "1.774vmin")
         .style('font-family', '"RobotoRegular"')
         .style('color', "#4e4f4f")
-        .attr('class', 'target-value font-RR15 fill7')
+        .attr('class', 'target-value font-RR14 fill7')
         .attr('y', axesHeight - 15)
         .attr('x', 0)
         .text((d) => {
