@@ -380,20 +380,7 @@ function load_dataset(fileData) {
         })      
 
     // Add and store a brush for each axis.
-    g.append("svg:g")
-        .attr("class", "brush")
-        .each(function (d) {
-            d3.select(this).call(yscale[d].brush = 
-                d3.svg.multibrush()
-                .extentAdaption(resizeExtent)
-                .y(yscale[d]).on("brush", function () {                 
-                    if (tableSelect.length === 0) {
-                        brushing = true;
-                        brush();
-                    }                   
-                }));
-        })
-        .selectAll("rect").call(resizeExtent);
+    setupBrushes();
 
     drawTargetsLabels(g);    
 
@@ -615,28 +602,6 @@ function position(d) {
 // TODO refactor
 function brush() {
 
-    //Remove Brushes when table Selection
-    let currentBrushes = d3.selectAll(".brush");
-    
-    if (tableSelect.length > 0) {
-        currentBrushes.remove();
-    }
-    else if (currentBrushes[0].length === 0) {
-        svg.selectAll(".dimension").append("svg:g")
-            .attr("class", "brush")
-            .each(function (d) {
-                d3.select(this).call(yscale[d].brush =
-                    d3.svg.multibrush()
-                        .extentAdaption(resizeExtent)
-                        .y(yscale[d]).on("brush", function () {
-                            if (tableSelect.length === 0) {
-                                brushing = true;
-                                brush();
-                            }
-                        }));
-            })
-            .selectAll("rect").call(resizeExtent);
-    }
 
     lastInputPosition = xscale(inputs[inputs.length - 1]);
 
@@ -677,11 +642,20 @@ function brush() {
     brush_count++;
     var actives = dimensions.filter(function (p) {
         let name = p.replace(/ /g, "_");
-        let ext = d3.selectAll("." + name + " .extent")       
-        
-        return !yscale[p].brush.empty() && ext[0][0].attributes.height.value > 0;
+        let ext = d3.selectAll("." + name + " .extent")   
+
+        //Fix in case Brushes were removed
+        let isBrushed = false;
+        if (ext[0].length > 0) {
+            isBrushed = ext[0][0].attributes.height.value > 0
+        }
+
+        return !yscale[p].brush.empty() && isBrushed;
     }),
     extents = actives.map(function (p) { return yscale[p].brush.extent(); });      
+
+
+   
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -707,7 +681,6 @@ function brush() {
                 .selectAll('.label')
                 .style('display', null);
         });
-
 
     // bold dimensions with label
     d3.selectAll('.label')
@@ -749,6 +722,9 @@ function brush() {
         brushing = true;
     }
 
+    //Remove Brushes when table Selection
+    let currentBrushes = d3.selectAll(".brush");   
+
     //Check tableSelections
     if (tableSelect.length > 0) {
         highlightSelected = true;
@@ -758,7 +734,11 @@ function brush() {
             });
             resetBrushes();
         }
-        selected = tableSelect
+        selected = tableSelect;
+        currentBrushes.remove();
+
+    } else if (currentBrushes[0].length === 0) {
+        setupBrushes();
     }
 
     // Render selected lines
@@ -950,19 +930,9 @@ window.onresize = function () {
 
         d3.selectAll(".dimension")
             .attr("transform", function (d) { return "translate(" + xscale(d) + ")"; })
+
         // update brush placement
-        d3.selectAll(".brush")
-            .each(function (d) {
-                d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
-                    .extentAdaption(resizeExtent)
-                    .y(yscale[d]).on("brush", function () {                        
-                        if (tableSelect.length === 0) {                           
-                            brushing = true;
-                            brush();
-                        }
-                    })
-                );
-            })
+        updateBrushes();
 
         brush_count++;
 
@@ -1524,4 +1494,37 @@ function getTicks(startValue, stopValue, cardinality) {
 
 function between(x, min, max) {
     return x >= min && x <= max;
+}
+
+function setupBrushes() {
+
+    svg.selectAll(".dimension").append("svg:g")
+        .attr("class", "brush")
+        .each(function (d) {
+            d3.select(this).call(yscale[d].brush =
+                d3.svg.multibrush()
+                    .extentAdaption(resizeExtent)
+                    .y(yscale[d]).on("brush", function () {
+                        if (tableSelect.length === 0) {
+                            brushing = true;
+                            brush();
+                        }
+                    }));
+        })
+        .selectAll("rect").call(resizeExtent);
+}
+
+function updateBrushes() {
+    d3.selectAll(".brush")
+        .each(function (d) {
+            d3.select(this).call(yscale[d].brush = d3.svg.multibrush()
+                .extentAdaption(resizeExtent)
+                .y(yscale[d]).on("brush", function () {
+                    if (tableSelect.length === 0) {
+                        brushing = true;
+                        brush();
+                    }
+                })
+            );
+        })
 }
