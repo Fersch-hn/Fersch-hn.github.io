@@ -259,7 +259,6 @@ function load_dataset(fileData) {
                         dimensions.sort(function (a, b) {
                             return position(a) - position(b);
                         });
-
                         reorderIOTargetArrays();                       
                     }
 
@@ -604,7 +603,6 @@ function position(d) {
 // TODO refactor
 function brush() {
 
-
     lastInputPosition = xscale(inputs[inputs.length - 1]);
 
     //Line Coloring   
@@ -618,17 +616,43 @@ function brush() {
         refAxisValues.push(d[refAxis]);
     });
 
+    //let colorArray;
+    //refAxisValues = _.uniq(refAxisValues);
+
+    //if (refAxisValues.length === 1) {
+    //    colorArray = ["#98c11d"]
+    //}
+    //else if (refAxisValues.length === 2) {
+    //    colorArray = ["#98c11d", "#33735f"]
+    //}
+    //else if (refAxisValues.length === 3) {
+    //    colorArray = ["#98c11d", "#33735f", "#0c74bb"]
+    //}
+    //else {
+    //    colorArray = ["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"];
+    //}
+
+   
+    refAxisValues = _.uniq(refAxisValues);
+
+    let colorArray = getColorArray(refAxisValues);
+
     //Scale if numerical or ordinal
     if (_.isNumber(refAxisValues[0])) {
 
+        
+       
         //Get Range
         let min = Math.min(...refAxisValues),
             max = Math.max(...refAxisValues);
 
+       
+        
+
         //Scale Colors
         x0 = d3.scaleQuantize()
             .domain([max, min])
-            .range(["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"]);
+            .range(colorArray);
 
         myColor = d3.scaleSequential().domain([max, min])
             .interpolator(d3.interpolateRgbBasis(x0.range()));
@@ -637,7 +661,7 @@ function brush() {
         refAxisValues.sort();
 
         myColor = d3.scaleOrdinal().domain(refAxisValues)
-            .range(["#98c11d", "#0c74bb", "#33735f", "#0c3c5e", "#032135"]);
+            .range(colorArray);
     }
 
     
@@ -783,11 +807,8 @@ function paths(selected, ctx, count) {
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
 
-    resetBrushes();
-
-    
-
-   
+    resetBrushes();  
+       
     // update axes
     d3.selectAll(".axis")
         .each(function (d, i) {
@@ -940,8 +961,7 @@ window.onresize = function () {
 
         brush_count++;
 
-        // update axis placement
-      
+        // update axis placement      
             d3.selectAll(".axis")
                 .each(function (d) {                    
                     if (_.isNumber(data[0][d])) {
@@ -1527,4 +1547,20 @@ function updateBrushes() {
                 })
             );
         })
+}
+
+function getColorArray(values) {   
+
+    if (values.length === 1) {
+        return ["#0c74bb"]
+    }
+    else if (values.length === 2) {
+        return ["#98c11d", "#0c74bb"]
+    }
+    else if (values.length === 3) {
+        return ["#98c11d", "#33735f", "#0c74bb"]
+    }
+    else {
+        return ["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"];
+    }
 }
