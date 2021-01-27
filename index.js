@@ -42,7 +42,8 @@ var m = [120, 40, 70, 40],
     lastInputPosition,
     clickedOnBrush = true,
     selected,
-    rows;
+    rows,
+    loadedData = false;
 
 //HSL
 var colors = {
@@ -285,7 +286,7 @@ function load_dataset(fileData) {
                     }
 
                     // remove axis if dragged all the way left
-                    if (dragging[d] < 12 || dragging[d] > w - 12) {
+                    if ((dragging[d] < 12 || dragging[d] > w - 12) && dimensions.length > 1) {
                         remove_axis(d, g);
 
                         //Inputs, Outputs, Targets
@@ -448,7 +449,6 @@ function grayscale(pixels, args) {
 
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity, ctx) {
-   
     let isForeground = ctx === foreground;
     selection.slice(i, max).forEach(function (d) {
         let pColor;
@@ -740,9 +740,7 @@ function brush() {
 
     } else if (currentBrushes[0].length === 0) {
         setupBrushes();
-    }
-
-    console.log(clickedOnBrush);
+    }    
 
     // Render selected lines
     paths(selected, foreground, brush_count, true);
@@ -750,6 +748,8 @@ function brush() {
     if (brush_count > 1) {
         updateTable();
     }    
+
+    loadedData = true;
 }
 
 // render a set of polylines on a canvas
@@ -764,7 +764,7 @@ function paths(selected, ctx, count) {
     
     data_table(shuffled_data.slice(0, 25));
     ctx.clearRect(0, 0, w + 1, h + 1);
-
+  
     // render all lines until finished or a new brush event
     function animloop() {
         if (i >= n || count < brush_count) return true;
@@ -1345,12 +1345,9 @@ function drawLabels() {
         .attr('x', 0)
         .text(String);
 
-
     let targetLabelPosition
     if (!targets.length <= 0) targetLabelPosition = ((xscale(targets[targets.length - 1].name) - xscale(targets[0].name)) / 2) + xscale(targets[0].name);   
-    else targetLabelPosition = 0;   
-
-    
+    else targetLabelPosition = 0;       
 
     let axes = d3.selectAll(".brush");    
     let axesHeight = axes[0][0].getBBox().height;
@@ -1436,14 +1433,12 @@ function reorderIOTargetArrays() {
 
 function reload() {
     let axes = d3.selectAll(".dimension");
-  
-    if (axes[0].length > 0) {
+
+    if (axes[0].length > 0 || loadedData) {
         var element = document.getElementById('uploader');
         var event = new Event('change');
         element.dispatchEvent(event);
-    }
-
-    debugger;
+    }    
 }
 
 function drawTargetsLabels(g) {
