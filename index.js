@@ -286,7 +286,7 @@ function load_dataset(fileData) {
                     }
 
                     // remove axis if dragged all the way left
-                    if ((dragging[d] < 12 || dragging[d] > w - 12) && dimensions.length > 1) {
+                    if ((dragging[d] < 12 || dragging[d] > w - 12) && dimensions.length > 2) {
                         remove_axis(d, g);
 
                         //Inputs, Outputs, Targets
@@ -615,40 +615,17 @@ function brush() {
     data.map(function (d) {
         refAxisValues.push(d[refAxis]);
     });
-
-    //let colorArray;
-    //refAxisValues = _.uniq(refAxisValues);
-
-    //if (refAxisValues.length === 1) {
-    //    colorArray = ["#98c11d"]
-    //}
-    //else if (refAxisValues.length === 2) {
-    //    colorArray = ["#98c11d", "#33735f"]
-    //}
-    //else if (refAxisValues.length === 3) {
-    //    colorArray = ["#98c11d", "#33735f", "#0c74bb"]
-    //}
-    //else {
-    //    colorArray = ["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"];
-    //}
-
    
     refAxisValues = _.uniq(refAxisValues);
-
     let colorArray = getColorArray(refAxisValues);
 
     //Scale if numerical or ordinal
-    if (_.isNumber(refAxisValues[0])) {
-
-        
+    if (_.isNumber(refAxisValues[0])) {        
        
         //Get Range
         let min = Math.min(...refAxisValues),
-            max = Math.max(...refAxisValues);
-
-       
+            max = Math.max(...refAxisValues);     
         
-
         //Scale Colors
         x0 = d3.scaleQuantize()
             .domain([max, min])
@@ -663,7 +640,6 @@ function brush() {
         myColor = d3.scaleOrdinal().domain(refAxisValues)
             .range(colorArray);
     }
-
     
     brush_count++;
     var actives = dimensions.filter(function (p) {
@@ -678,10 +654,7 @@ function brush() {
 
         return !yscale[p].brush.empty() && isBrushed;
     }),
-    extents = actives.map(function (p) { return yscale[p].brush.extent(); });      
-
-
-   
+    extents = actives.map(function (p) { return yscale[p].brush.extent(); });        
 
     // hack to hide ticks beyond extent
     var b = d3.selectAll('.dimension')[0]
@@ -1239,6 +1212,7 @@ function updateTable() {
 }
 
 function drawBoxes() {
+
     let lastOutputPosition;
     if (outputs.length > 0 || inputs.length > 1) {
         firstOutputPosition = xscale(outputs[0]);
@@ -1251,31 +1225,25 @@ function drawBoxes() {
 
     let firstInputPosition = xscale(inputs[0]);
     let lastInputPosition = xscale(inputs[inputs.length - 1]);
-
-    console.log(dimensions);
-    var spaceBetweenAxes = 0.8;
-    console.log(!(dimensions.length === 1), spaceBetweenAxes);
-
-    if (!(dimensions.length === 1)) spaceBetweenAxes = xscale(dimensions[1]) - xscale(dimensions[0]);
-    //else spaceBetweenAxes = 1;
-    console.log(spaceBetweenAxes);
-   
+       
+    var spaceBetweenAxes = 1;   
+    if (!(dimensions.length === 1)) spaceBetweenAxes = xscale(dimensions[1]) - xscale(dimensions[0]);     
    
     //Extra Space Between last Axis and svg end.
-    let extraSpace = width - lastOutputPosition - m[3] - m[1];
-
-    //let wInputBox = firstOutputPosition - (spaceBetweenAxes * 0.53) + m[1];
-    let wInputBox = lastInputPosition - firstInputPosition + (spaceBetweenAxes * 0.47) + extraSpace + m[1];
-
-
-    console.log(spaceBetweenAxes);
+    let extraSpace = firstInputPosition;
+  
+    let wInputBox = lastInputPosition - firstInputPosition + (spaceBetweenAxes * 0.47) + extraSpace + m[1];  
+    
     let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.47);
     let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace + xOutputRect;
+
     //Inputs Box
-    drawRect(m[1], wInputBox, height);
+    if (!inputs.length <= 0) drawRect(m[1], wInputBox, height); 
+    else displayErrorMsg("Inputs");
 
     //Outputs Box
-    drawRect(xOutputRect, wOutputBox, height);
+    if (!outputs.length <= 0) drawRect(xOutputRect, wOutputBox, height);
+    //else displayErrorMsg("Outputs");
 }
 
 function resizeExtent(selection) {
@@ -1285,7 +1253,7 @@ function resizeExtent(selection) {
 }
 
 function drawRect(x, rectWidth, rectHeight) {
-    console.log(x, rectWidth, rectHeight);
+   
     //left line
     d3.select("svg")
         .append("line")
@@ -1354,7 +1322,7 @@ function drawLabels() {
         .attr("class", "dimensionIO fill3")
         .attr("transform", function (d, i) {
             if (d === "INPUTS") return "translate( " + inputLabelPosition + " )";
-            else if (d === "OUTPUTS") return "translate( " + outputLabelPosition + " )";
+            else if (d === "OUTPUTS") return "translate( " + outputLabelPosition + " )";          
         })
         .append("text")
         .attr("text-anchor", "middle")      
@@ -1365,7 +1333,11 @@ function drawLabels() {
         .attr("class", "font-BB17")
         .attr('y', -80)
         .attr('x', 0)
-        .text(String);
+        .text(function (d) {
+            if (d === "INPUTS" && !inputs.length <= 0) return "INPUTS";
+            else if (d === "OUTPUTS" && !outputs.length <= 0) return "OUTPUTS";
+            else return " ";
+        });
 
     let targetLabelPosition
     if (!targets.length <= 0) targetLabelPosition = ((xscale(targets[targets.length - 1].name) - xscale(targets[0].name)) / 2) + xscale(targets[0].name);   
@@ -1563,4 +1535,8 @@ function getColorArray(values) {
     else {
         return ["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"];
     }
+}
+
+function displayErrorMsg(groupName) {
+    document.getElementById('error').innerHTML = "All " + groupName + " have been removed.";
 }
