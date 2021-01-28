@@ -96,8 +96,8 @@ d3.selectAll("canvas")
 // Foreground canvas for primary view
 foreground = document.getElementById('foreground').getContext('2d');
 foreground.globalCompositeOperation = "destination-over";
-foreground.strokeStyle = "rgba(0,100,160,0.1)";
-foreground.lineWidth = 1.7;
+foreground.strokeStyle = "rgba(0,100,160,1)";
+foreground.lineWidth = 1;
 
 // Highlight canvas for temporary interactions
 highlighted = document.getElementById('highlight').getContext('2d');
@@ -107,7 +107,7 @@ highlighted.lineWidth = 4;
 // Background canvas
 background = document.getElementById('background').getContext('2d');
 background.strokeStyle = "rgba(85,72,72,0.7)";
-background.lineWidth = 1.7;
+background.lineWidth = 1;
 
 // SVG for ticks, labels, and interactions
 var svg = d3.select("svg")
@@ -454,7 +454,7 @@ function render_range(selection, i, max, opacity, ctx) {
         let pColor;
 
         if (isForeground) pColor = myColor(d[refAxis]);
-        else pColor = color("background", 0.2);
+        else pColor = color("background", 0.4);
         path(d, ctx, pColor);
     });
 };
