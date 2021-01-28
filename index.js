@@ -1214,14 +1214,13 @@ function updateTable() {
 function drawBoxes() {
 
     let lastOutputPosition;
-    if (outputs.length > 0 || inputs.length > 1) {
+  
         firstOutputPosition = xscale(outputs[0]);
         lastOutputPosition = xscale(outputs[outputs.length - 1]);
-    }
-    else {
-        firstOutputPosition = width * 0.97;
-        lastOutputPosition = width * 0.97;
-    }
+   
+        //firstOutputPosition = width * 0.97;
+        //lastOutputPosition = width * 0.97;
+    
 
     let firstInputPosition = xscale(inputs[0]);
     let lastInputPosition = xscale(inputs[inputs.length - 1]);
@@ -1230,17 +1229,17 @@ function drawBoxes() {
     if (!(dimensions.length === 1)) spaceBetweenAxes = xscale(dimensions[1]) - xscale(dimensions[0]);     
    
     //Extra Space Between last Axis and svg end.
-    let extraSpace = firstInputPosition;
+    let extraSpace = xscale(dimensions[0]);
   
     let wInputBox = lastInputPosition - firstInputPosition + (spaceBetweenAxes * 0.47) + extraSpace + m[1];  
     
     let xOutputRect = firstOutputPosition + m[1] - (spaceBetweenAxes * 0.47);
-    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace + xOutputRect;
-
+    let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace + xOutputRect;   
+   
     //Inputs Box
     if (!inputs.length <= 0) drawRect(m[1], wInputBox, height); 
-    else displayErrorMsg("Inputs");
-
+    //else displayErrorMsg("Inputs");
+   
     //Outputs Box
     if (!outputs.length <= 0) drawRect(xOutputRect, wOutputBox, height);
     //else displayErrorMsg("Outputs");
