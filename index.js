@@ -69,7 +69,7 @@ function upload_button(el, callback) {
         var fileName = uploader.files[0].name;
         if (!(/\.(csv)$/i).test(fileName)) {
             document.getElementById('file-span').innerHTML = fileName + " - Please Upload a CSV";
-            alert("You upload a non .csv file. Please try again loading a .csv file");
+            alert("You uploaded a non .csv file. Please try again loading a .csv file");
             return;
         }
 
@@ -1385,7 +1385,12 @@ function removeFromArrays(d) {
 // Set-up the export button
 d3.select('#saveButton').on('click', function () {  
 
-    html2canvas(document.querySelector('#chart')).then(function (canvas) {
+    let elW = document.getElementById("chart").offsetWidth;
+    let elH = document.getElementById("chart").offsetHeight;  
+
+    html2canvas(document.querySelector('#chart'), {       
+        width: elW, height: elH
+    }).then(function (canvas) {
         var myImage = canvas.toDataURL();
         downloadURI(myImage, csvFileName +  ".jpeg");        
     });
