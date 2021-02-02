@@ -69,7 +69,7 @@ function upload_button(el, callback) {
         var fileName = uploader.files[0].name;
         if (!(/\.(csv)$/i).test(fileName)) {
             document.getElementById('file-span').innerHTML = fileName + " - Please Upload a CSV";
-            alert("You uploaded a non .csv file. Please try again loading a .csv file");
+            alert("The file you are trying to upload is not a .csv file. Please try uploading a .csv file again.");
             return;
         }
 
@@ -227,6 +227,11 @@ function load_dataset(fileData) {
         else if (obj.io.toLowerCase() === "output") outputs.push(d);
     });
 
+    //Error if no IO
+    if (inputs.length === 0) displayErrorMsgOnLoad("Inputs");
+    if (outputs.length === 0) displayErrorMsgOnLoad("Outputs");
+    if (outputs.length === 0 || inputs.length === 0) return;
+
     //Get Targets Axes Names
     targets = magnitudes.filter(x => x.target !== null);
 
@@ -285,13 +290,31 @@ function load_dataset(fileData) {
                         var extent = yscale[d].brush.extent();
                     }
 
-                    // remove axis if dragged all the way left
-                    if ((dragging[d] < 12 || dragging[d] > w - 12) && dimensions.length > 2) {
+                     //Check if last Input before removing
+                    let lastIO;
+                    let group;
+                    if (inputs.includes(d)) {
+                        if (inputs.length === 1) {
+                            lastIO = true;
+                            group = "Inputs";
+                        } else lastIO = false;
+                    }
+                    else {
+                        if (outputs.length === 1) {
+                            lastIO = true;
+                            group = "Outputs";
+                        }
+                        else lastIO = false;
+                    }
+
+                    // remove axis if dragged all the way left & other
+                    if ((dragging[d] < 12 || dragging[d] > w - 12) && dimensions.length > 2 && !lastIO) {
                         remove_axis(d, g);
 
                         //Inputs, Outputs, Targets
                         removeFromArrays(d);
                     }
+                    else if (lastIO) displayErrorMsgOnDelete(group);
 
                     // TODO required to avoid a bug
                     xscale.domain(dimensions);
@@ -1232,12 +1255,10 @@ function drawBoxes() {
     let wOutputBox = lastOutputPosition - firstOutputPosition + (spaceBetweenAxes * 0.47) + extraSpace + xOutputRect;   
    
     //Inputs Box
-    if (!inputs.length <= 0) drawRect(m[1], wInputBox, height); 
-    //else displayErrorMsg("Inputs");
+    if (!inputs.length <= 0) drawRect(m[1], wInputBox, height);    
    
     //Outputs Box
-    if (!outputs.length <= 0) drawRect(xOutputRect, wOutputBox, height);
-    //else displayErrorMsg("Outputs");
+    if (!outputs.length <= 0) drawRect(xOutputRect, wOutputBox, height);   
 }
 
 function resizeExtent(selection) {
@@ -1536,6 +1557,10 @@ function getColorArray(values) {
     }
 }
 
-function displayErrorMsg(groupName) {
-    document.getElementById('error').innerHTML = "All " + groupName + " have been removed.";
+function displayErrorMsgOnDelete(group) {
+    alert("Unable to remove category. At least one category of " + group + " is required.");
+}
+
+function displayErrorMsgOnLoad(group) {
+    alert("Unable to load graphic. At least one category of " + group + " is required. Check your .csv file.");
 }
