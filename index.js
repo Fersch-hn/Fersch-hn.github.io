@@ -202,8 +202,8 @@ function load_dataset(fileData) {
     data = newData;
 
     //Scale for the rest of the data
-    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {
-        if (_.isNumber(data[0][k])) {
+    xscale.domain(dimensions = d3.keys(data[0]).filter(function (k) {            
+        if (checkValues(k)) {
             return (true) && (yscale[k] = d3.scaleLinear()
                 .domain(d3.extent(data, function (d) { return +d[k]; }))
                 .range([h - 2, 2]));
@@ -1563,4 +1563,16 @@ function displayErrorMsgOnDelete(group) {
 
 function displayErrorMsgOnLoad(group) {
     alert("Unable to load graphic. At least one category of " + group + " is required. Check your .csv file.");
+}
+
+function checkValues(dimension) {
+    let values = [];
+
+    data.map(function (d) {
+        values.push(d[dimension])
+    });
+
+    return _.uniq(values).some(function (d) {
+        return _.isNumber(d)
+    });       
 }
