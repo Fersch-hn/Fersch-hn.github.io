@@ -1060,6 +1060,7 @@ function setupTable(selected, data) {
         .style("font-size", "1.9vmin")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
+        .attr("class", "mozFontFix")
 
         .text(function (d) { return d; });    
 
@@ -1211,16 +1212,10 @@ function updateTable() {
         })
 }
 
-function drawBoxes() {
-
-    let lastOutputPosition;
+function drawBoxes() {    
   
-        firstOutputPosition = xscale(outputs[0]);
-        lastOutputPosition = xscale(outputs[outputs.length - 1]);
-   
-        //firstOutputPosition = width * 0.97;
-        //lastOutputPosition = width * 0.97;
-    
+    let firstOutputPosition = xscale(outputs[0]);
+    let lastOutputPosition = xscale(outputs[outputs.length - 1]);   
 
     let firstInputPosition = xscale(inputs[0]);
     let lastInputPosition = xscale(inputs[inputs.length - 1]);

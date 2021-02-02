@@ -460,3 +460,14 @@ td, th {
 .selected {
     background-color: #e6f1f8 !important;
 }
+
+@supports (-moz-appearance:none) {
+    .mozFontFix {
+        font-weight: normal;
+    }
+
+    #FilterableTable {       
+        scrollbar-color: blue;     
+    }
+}
+
