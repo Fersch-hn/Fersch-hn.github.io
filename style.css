@@ -481,6 +481,7 @@ td, th {
     background-repeat: no-repeat;
 }
 
+/*MOZ*/
 @supports (-moz-appearance:none) {
     .mozFontFix {
         font-weight: normal;
