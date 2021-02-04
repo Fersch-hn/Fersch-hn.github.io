@@ -12,21 +12,22 @@
 
             <div class="file-upload" style="white-space:nowrap">
                 <div style="margin-bottom:10px; margin-top:25px;">
-                    <span class="font-RB30" style="color: #04293f">Parametric Data</span>  
+                    <span class="font-RB30" style="color: #04293f">Parametric Data</span>
                 </div>
-                
-                <label for="uploader"> 
-                    <img src="./icons/folder-outline.svg" style="max-height: 20px; max-width: 20px; vertical-align:middle;" />
+
+                <label for="uploader">
+                    <div class="file-icon icon" style="cursor:pointer; vertical-align:middle;"></div>
                     <span id="file-span" style="vertical-align: middle;"></span>
                 </label>
-                <img src="./icons/refresh-outline.svg" style="vertical-align: middle; max-height: 20px; max-width: 20px; margin-left: 0px;"
-                     onclick="reload();" />
+               
+                <div  class="reload-icon icon" style="vertical-align: middle; cursor:pointer; "
+                   onclick="reload();" ></div>
                 <input id="uploader" type="file" />
                 <img id='saveButton' src="./icons/arrow-down-outline.svg" style="  max-height: 20px; max-width: 20px; vertical-align:middle;" />
                 <span id="error"></span>
             </div>
 
-            <img src="./img/logo.jpg" style="  max-height: 120px; max-width: 120px; margin-left: auto; " />
+            <div class="download-icon icon" style=" margin-left: auto; "> </div>
 
         </div>
 
