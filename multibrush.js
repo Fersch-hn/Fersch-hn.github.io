@@ -1,4 +1,5 @@
-d3.svg.multibrush = function () {
+//Multibrush
+d3.svg.multibrush = () => {
 
     // From d3/scale/scale.js
     function d3_scaleExtent(domain) {

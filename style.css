@@ -461,13 +461,65 @@ td, th {
     background-color: #e6f1f8 !important;
 }
 
+/*Icons */
+.reload-icon {  
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3ERefresh%3C/title%3E%3Cpath d='M320 146s24.36-12-64-12a160 160 0 10160 160' fill='none' stroke='%235e676d' stroke-linecap='round' stroke-miterlimit='10' stroke-width='32'/%3E%3Cpath fill='none' stroke='%235e676d' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M256 58l80 80-80 80'/%3E%3C/svg%3E");
+}
+
+.file-icon {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EFolder%3C/title%3E%3Cpath d='M440 432H72a40 40 0 01-40-40V120a40 40 0 0140-40h75.89a40 40 0 0122.19 6.72l27.84 18.56a40 40 0 0022.19 6.72H440a40 40 0 0140 40v240a40 40 0 01-40 40zM32 192h448' fill='none' stroke='%235e676d' stroke-linecap='round' stroke-linejoin='round' stroke-width='32'/%3E%3C/svg%3E");
+}
+
+.download-icon {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EArrow Down%3C/title%3E%3Cpath fill='none' stroke='%235e676d' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 268l144 144 144-144M256 392V100'/%3E%3C/svg%3E");
+}
+
+.icon {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    background-repeat: no-repeat;
+}
+
+/*MOZ*/
 @supports (-moz-appearance:none) {
     .mozFontFix {
         font-weight: normal;
-    }
-
-    #FilterableTable {       
-        scrollbar-color: blue;     
-    }
+    }  
 }
 
+/*fontface*/
+@font-face {
+    font-family: BarlowBold;
+    src: url('./fonts/Barlow-Bold.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: RobotoBold;
+    src: url('./fonts/Roboto-Bold.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: RobotoRegular;
+    src: url('./fonts/Roboto-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: RobotoMedium;
+    src: url('./fonts/Roboto-Medium.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: RobotoLight;
+    src: url('./fonts/Roboto-Light.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
