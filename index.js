@@ -47,7 +47,8 @@ let m = [120, 40, 70, 40],
     selected,
     rows,
     loadedData = false,
-    expandedMode = false;
+    expandedMode = false,
+    fullScreenMode = false;
 
 //HSL
 var colors = {
@@ -1400,7 +1401,7 @@ function removeFromArrays(d) {
     targets.splice(idx, 1);
 }
 
-// Expand/Collapse
+// Expand/Collapse/Fullscreen
 
 d3.select('#expand-button').on('click', () => {     
     expandedMode = true;
@@ -1410,7 +1411,6 @@ d3.select('#expand-button').on('click', () => {
     d3.select('#collapse-button').style('display', 'inline-flex');
 });
 
-// Set-up expand button
 d3.select('#collapse-button').on('click', () => {    
     expandedMode = false;
     heightCoefficient = 0.55;
@@ -1418,6 +1418,47 @@ d3.select('#collapse-button').on('click', () => {
     d3.select('#collapse-button').style('display', 'none');
     d3.select('#expand-button').style('display', 'inline-flex');
 });
+
+d3.select('#full-screen-button').on('click', () => {    
+    let elem = document.documentElement;
+    fullScreenMode = !fullScreenMode;
+
+    if (fullScreenMode) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        }
+    }
+});
+
+// var elem = document.documentElement;
+// function openFullscreen() {
+//   if (elem.requestFullscreen) {
+//     elem.requestFullscreen();
+//   } else if (elem.webkitRequestFullscreen) { /* Safari */
+//     elem.webkitRequestFullscreen();
+//   } else if (elem.msRequestFullscreen) { /* IE11 */
+//     elem.msRequestFullscreen();
+//   }
+// }
+
+// function closeFullscreen() {
+//   if (document.exitFullscreen) {
+//     document.exitFullscreen();
+//   } else if (document.webkitExitFullscreen) { /* Safari */
+//     document.webkitExitFullscreen();
+//   } else if (document.msExitFullscreen) { /* IE11 */
+//     document.msExitFullscreen();
+//   }
+// }
+
 
 // Set-up the export button
 d3.select('#saveButton').on('click', function () {  
