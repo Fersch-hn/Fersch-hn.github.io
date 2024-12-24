@@ -1,7 +1,8 @@
 // Parallel Coordinates
 // Copyright (c) 2012, Kai Chang
-//Modified by Fernando Martinez and Jonathan Duncan (First-Rate Programmers, 2021)
-//For AMEGroup
+// Modified by Fernando Martinez and Jonathan Duncan (First-Rate Programmers, 2021)
+// Light Improvements in 2025
+// For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
 let width = document.body.clientWidth,
@@ -315,8 +316,6 @@ function load_dataset(fileData) {
                     xscale.domain(dimensions);
                     update_ticks(d, extent);
 
-                    drawTargetsLabels(d3.selectAll(".dimension"));
-
                     // rerender
                     d3.select("#foreground").style("opacity", null);
                     brush();
@@ -351,7 +350,14 @@ function load_dataset(fileData) {
                 let minAndMax = d3.extent(val);
 
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
-                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
+
+                // Add Targets to ticks
+                const target = targets.find(target => target.name === d);
+                if(target) {                    
+                    ticks.push(+target.target);
+                }                         
+                
+                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));                
             }
             else {
                 axis = d3.svg.axis().orient("left").ticks(1 + height / 50);  
@@ -376,15 +382,29 @@ function load_dataset(fileData) {
         .append("title")
         .text("Click to change color. Drag to reorder");
 
-    //Tick style font
-    g.selectAll(".tick")
+    styleTicks(g);
+    styleTargets(g);
+    addExtraLabels(g);   
+    setupBrushes(g);    // Add and store a brush for each axis.
+    tableSelect = []; //In case new file is loaded, this resets selection
+    brush(); // Render full foreground
+    paths(data, background, brush_count, true); //Background Lines
+    drawLabels(); //Input/Output Labels
+    setupTable(selected, data);   
+    d3.selectAll(".box").remove(); //Remove existing Boxes
+    drawBoxes();
+};
+
+const styleTicks = (group) => {
+    group.selectAll(".tick")
         .style("font-size", "1.774vmin")     
         .style('font-family', '"RobotoMedium"')
-        .style('color', "#58595b")  
+        .style('color', "#58595b");
+};
 
-    //Add Extra Labels
+const addExtraLabels = (group) => {
     //Measure Magnitudes
-    g.append("svg:g")
+    group.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
         .style("font-size", "1.774vmin")      
@@ -397,52 +417,32 @@ function load_dataset(fileData) {
             let obj = magnitudes.find(m => m.name === d);
             return obj.value;
         })        
-
-    // Add and store a brush for each axis.
-    setupBrushes();
-
-    drawTargetsLabels(g);    
-
-    g.selectAll(".extent")
-        .append("title")
-        .text("Drag or resize this filter");
-
-    d3.selectAll(".brush")
-        .on("mousedown", function () {
-            clickedOnBrush = true;
-        });
-
-    d3.selectAll(".brush")
-        .on("click", function () {
-            brush();
-        });
-
-    d3.selectAll(".axis-label")
-        .on("mousedown", function () {           
-            clickedOnBrush = false;
-            brushing = false;
-        })  
-
-    //In case new file is loaded, this resets selection
-    tableSelect = [];
-
-    // Render full foreground
-    brush();
-
-    //Background Lines
-    paths(data, background, brush_count, true);
-
-    //Input/Output Labels
-    drawLabels();
-
-    setupTable(selected, data);   
-
-    //Remove existing Boxes
-    d3.selectAll(".box").remove();
-    drawBoxes();
 };
 
+const styleTargets = (group) => {
+    const ticks = group.selectAll(".tick");
+    ticks.forEach((scale) => {        
+        const scaleName = scale.parentNode.classList[1];
+        const target = targets.find(target => 
+            target.name.replace(' ', '_') === scaleName
+        );
 
+        if(target ) {
+            const tickIndex = scale.findIndex(tick => 
+                +tick.children[1].innerHTML === +target.target
+            );           
+
+            if(tickIndex >= 0) {   
+                const tick = scale[tickIndex];             
+                tick.removeChild(tick.children[1]);
+                tick.children[0].setAttribute('x2', '-20');
+                tick.children[0].setAttribute('x1', '20');               
+                tick.children[0].style.strokeWidth = 4;
+                tick.children[0].style.stroke = '#a71717';
+            }            
+        }
+    });
+};
 
 // copy one canvas to another, grayscale
 function gray_copy(source, target) {
@@ -473,6 +473,7 @@ function render_range(selection, i, max, opacity, ctx) {
 
         if (isForeground) pColor = myColor(d[refAxis]);
         else pColor = color("background", 0.4);
+        console.log(d, 'd');
         path(d, ctx, pColor);
     });
 };
@@ -969,9 +970,7 @@ const renderResize = () => {
                         axis = d3.svg.axis().orient("left").ticks(1 + height / 50);
                         d3.select(this).call(axis.scale(yscale[d]).ticks(1 + height / 50).tickPadding([15]));
                     }
-                });   
-
-        drawTargetsLabels(d3.selectAll(".dimension"));
+                });           
 
         setupTable(selected, data);        
 
@@ -1356,35 +1355,6 @@ function drawLabels() {
             else if (d === "OUTPUTS" && !outputs.length <= 0) return "OUTPUTS";
             else return " ";
         });
-
-    let targetLabelPosition
-    if (!targets.length <= 0) targetLabelPosition = ((xscale(targets[targets.length - 1].name) - xscale(targets[0].name)) / 2) + xscale(targets[0].name);   
-    else targetLabelPosition = 0;       
-
-    let axes = d3.selectAll(".brush");    
-    let axesHeight = axes[0][0].getBBox().height;
-  
-    //Add Target Label   
-    d3.selectAll(".target-label").remove();
-    svg.append("svg:g")
-        .attr("class", "target-label")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("class", "target-label")
-        .style('letter-spacing', "2px")
-        .style("font-size", "1.901vmin")
-        .style('font-family', '"RobotoBold"')
-        .style('color', "#4e4f4f")       
-        .attr("class", "fill4 font-RB15")
-        .attr("transform", function () {
-            return "translate( " + targetLabelPosition + " )";
-        })
-        .attr('y', axesHeight + 30)
-        .attr('x', 0)
-        .text(function () {
-            if (!targets.length <= 0) return "TARGETS";
-            else return " ";           
-        });
 }
 
 function removeFromArrays(d) {
@@ -1437,28 +1407,6 @@ d3.select('#full-screen-button').on('click', () => {
         }
     }
 });
-
-// var elem = document.documentElement;
-// function openFullscreen() {
-//   if (elem.requestFullscreen) {
-//     elem.requestFullscreen();
-//   } else if (elem.webkitRequestFullscreen) { /* Safari */
-//     elem.webkitRequestFullscreen();
-//   } else if (elem.msRequestFullscreen) { /* IE11 */
-//     elem.msRequestFullscreen();
-//   }
-// }
-
-// function closeFullscreen() {
-//   if (document.exitFullscreen) {
-//     document.exitFullscreen();
-//   } else if (document.webkitExitFullscreen) { /* Safari */
-//     document.webkitExitFullscreen();
-//   } else if (document.msExitFullscreen) { /* IE11 */
-//     document.msExitFullscreen();
-//   }
-// }
-
 
 // Set-up the export button
 d3.select('#saveButton').on('click', function () {  
@@ -1517,29 +1465,6 @@ function reload() {
     }    
 }
 
-function drawTargetsLabels(g) {
-    d3.selectAll(".target-value").remove();
-
-    let axes = d3.selectAll(".axis");
-    let axesHeight = axes[0][0].getBBox().height;
-
-    //Target    
-    g.append("svg:g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .style("font-size", "1.774vmin")
-        .style('font-family', '"RobotoRegular"')
-        .style('color', "#4e4f4f")
-        .attr('class', 'target-value font-RR14 fill7')
-        .attr('y', axesHeight - 15)
-        .attr('x', 0)
-        .text((d) => {
-            let obj = magnitudes.find(m => m.name === d);
-            if (obj.target === null) { return " " }
-            else { return obj.target; }
-        });
-}
-
 function resetBrushes() {
     //Reset Brushes
     d3.selectAll(".brush")
@@ -1570,8 +1495,7 @@ function between(x, min, max) {
     return x >= min && x <= max;
 }
 
-function setupBrushes() {
-
+const setupBrushes = (group) => {
     svg.selectAll(".dimension").append("svg:g")
         .attr("class", "brush")
         .each(function (d) {
@@ -1586,6 +1510,27 @@ function setupBrushes() {
                     }));
         })
         .selectAll("rect").call(resizeExtent);
+
+
+    group.selectAll(".extent")
+        .append("title")
+        .text("Drag or resize this filter");
+
+    d3.selectAll(".brush")
+        .on("mousedown", () => {
+            clickedOnBrush = true;
+        });
+
+    d3.selectAll(".brush")
+        .on("click", () => {
+            brush();
+        });
+
+    d3.selectAll(".axis-label")
+        .on("mousedown", () => {           
+            clickedOnBrush = false;
+            brushing = false;
+        })  
 }
 
 function updateBrushes() {
