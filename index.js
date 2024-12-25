@@ -5,6 +5,13 @@
 // For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+
+// Ideas for overlapping
+
+// - Maybe brush and rerender the axis to zoom into the brushed section
+// - Add opacity to colors
+// - regenerate scale when brushing
+
 let width = document.body.clientWidth,
     // heightCoefficient determines screen space the graph will have
     heightCoefficient = .55,
@@ -109,11 +116,6 @@ foreground.lineWidth = 1;
 highlighted = document.getElementById('highlight').getContext('2d');
 highlighted.strokeStyle = "rgba(0,100,160,1)";
 highlighted.lineWidth = 4;
-
-// Background canvas
-background = document.getElementById('background').getContext('2d');
-background.strokeStyle = "rgba(85,72,72,0.7)";
-background.lineWidth = 1;
 
 // SVG for ticks, labels, and interactions
 var svg = d3.select("svg")
@@ -318,10 +320,7 @@ function load_dataset(fileData) {
 
                     // rerender
                     d3.select("#foreground").style("opacity", null);
-                    brush();
-
-                    //Background Lines
-                    paths(data, background, brush_count, true);
+                    brush();                    
 
                     //Input/Output Label
                     drawLabels();
@@ -388,7 +387,6 @@ function load_dataset(fileData) {
     setupBrushes(g);    // Add and store a brush for each axis.
     tableSelect = []; //In case new file is loaded, this resets selection
     brush(); // Render full foreground
-    paths(data, background, brush_count, true); //Background Lines
     drawLabels(); //Input/Output Labels
     setupTable(selected, data);   
     d3.selectAll(".box").remove(); //Remove existing Boxes
@@ -845,9 +843,6 @@ function update_ticks(d, extent) {
 
     brush_count++;
     brush();
-
-    //Background Lines
-    setTimeout(function () { paths(data, background, brush_count, true) }, 1000);     
 }
 
 // Rescale to new dataset domain
@@ -929,7 +924,6 @@ const renderResize = () => {
             .style("padding", m.join("px ") + "px");
 
         foreground.lineWidth = 1.7;
-        background.lineWidth = 1.7;
         highlight.lineWidth = 4;
 
         d3.select("svg")
@@ -975,10 +969,7 @@ const renderResize = () => {
         setupTable(selected, data);        
 
         // render data
-        brush();
-
-        //Background Lines
-        paths(data, background, brush_count, true);
+        brush();        
 
         //Input/Output Labels
         drawLabels();
