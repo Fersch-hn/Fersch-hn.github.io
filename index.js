@@ -9,7 +9,7 @@
 // Ideas for overlapping
 
 // - Maybe brush and rerender the axis to zoom into the brushed section
-// - Add opacity to colors
+// - Add opacity to colors => Opacity darkens colors and makes line thinner
 // - regenerate scale when brushing
 
 let width = document.body.clientWidth,
@@ -110,7 +110,7 @@ d3.selectAll("canvas")
 foreground = document.getElementById('foreground').getContext('2d');
 foreground.globalCompositeOperation = "destination-over";
 foreground.strokeStyle = "rgba(0,100,160,1)";
-foreground.lineWidth = 1;
+foreground.lineWidth = 2;
 
 // Highlight canvas for temporary interactions
 highlighted = document.getElementById('highlight').getContext('2d');
@@ -352,9 +352,9 @@ function load_dataset(fileData) {
 
                 // Add Targets to ticks
                 const target = targets.find(target => target.name === d);
-                if(target) {                    
+                if(target) {
                     ticks.push(+target.target);
-                }                         
+                }
                 
                 d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));                
             }
@@ -436,7 +436,7 @@ const styleTargets = (group) => {
                 tick.children[0].setAttribute('x2', '-20');
                 tick.children[0].setAttribute('x1', '20');               
                 tick.children[0].style.strokeWidth = 4;
-                tick.children[0].style.stroke = '#a71717';
+                tick.children[0].style.stroke = '#ff5252';
             }            
         }
     });
@@ -468,10 +468,8 @@ function render_range(selection, i, max, opacity, ctx) {
     let isForeground = ctx === foreground;
     selection.slice(i, max).forEach(function (d) {
         let pColor;
-
         if (isForeground) pColor = myColor(d[refAxis]);
         else pColor = color("background", 0.4);
-        console.log(d, 'd');
         path(d, ctx, pColor);
     });
 };
@@ -797,7 +795,7 @@ function paths(selected, ctx, count) {
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
 
-    resetBrushes();  
+    resetBrushes();
        
     // update axes
     d3.selectAll(".axis")
@@ -813,8 +811,13 @@ function update_ticks(d, extent) {
                     val.push(e[d]);
                 });
                 let minAndMax = d3.extent(val);
-
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+
+                // Add Targets to ticks
+                const target = targets.find(target => target.name === d);
+                if(target) {
+                    ticks.push(+target.target);
+                }
 
                 d3.select(this)
                     .transition()
@@ -923,9 +926,6 @@ const renderResize = () => {
             .attr("height", h + 2)
             .style("padding", m.join("px ") + "px");
 
-        foreground.lineWidth = 1.7;
-        highlight.lineWidth = 4;
-
         d3.select("svg")
             .attr("width", w + m[1] + m[3])
             .attr("height", h + m[0] + m[2])
@@ -950,14 +950,19 @@ const renderResize = () => {
             d3.selectAll(".axis")
                 .each(function (d) {                    
                     if (_.isNumber(data[0][d])) {
-
                         let val = [];
                         data.map(function (e) {
                             val.push(e[d]);
                         });
                         let minAndMax = d3.extent(val);
-
                         let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+
+                        // Add Targets to ticks
+                        const target = targets.find(target => target.name === d);
+                        if(target) {
+                            ticks.push(+target.target);
+                        }
+
                         d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
                     }
                     else {
@@ -1545,13 +1550,13 @@ function getColorArray(values) {
         return ["#0c74bb"]
     }
     else if (values.length === 2) {
-        return ["#98c11d", "#0c74bb"]
+        return ["#98c11d", "#0076bd"]
     }
     else if (values.length === 3) {
-        return ["#98c11d", "#33735f", "#0c74bb"]
+        return ["#98c11d", "#33735f", "#0076bd"]
     }
     else {
-        return ["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"];
+        return ["#98c11d", "#33735f", "#0076bd"];
     }
 }
 
