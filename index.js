@@ -5,7 +5,6 @@
 // For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
-
 // Ideas for overlapping
 
 // - Maybe brush and rerender the axis to zoom into the brushed section
@@ -479,6 +478,7 @@ function render_range(selection, i, max, opacity, ctx) {
         let pColor;
         if (isForeground) pColor = myColor(d[refAxis]);
         else pColor = color("background", 0.4);
+        console.log(d, 'd');
         path(d, ctx, pColor);
     });
 };
