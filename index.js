@@ -61,7 +61,7 @@ let m = [120, 40, 70, 40],
 //HSL
 var colors = {
     "test": [225, 53, 70],
-    "background": [225, 5, 59]
+    "background": [225, 5, 80]
 };
 
 // handle upload button
@@ -117,6 +117,11 @@ highlighted = document.getElementById('highlight').getContext('2d');
 highlighted.strokeStyle = "rgba(0,100,160,1)";
 highlighted.lineWidth = 4;
 
+// Background canvas
+background = document.getElementById('background').getContext('2d');
+background.strokeStyle = "rgba(85,72,72,0.7)";
+background.lineWidth = 1;
+
 // SVG for ticks, labels, and interactions
 var svg = d3.select("svg")
     .attr("width", w + m[1] + m[3])
@@ -133,7 +138,7 @@ svg.append('defs')
     .text((styles));
 
 d3.selectAll(".file-upload")
-    .style("font-size", "2.15vmin")    
+    .style("font-size", "20px")    
     .style('font-family', '"RobotoRegular"')
     .style('color', "#5e676d")         
 
@@ -320,7 +325,10 @@ function load_dataset(fileData) {
 
                     // rerender
                     d3.select("#foreground").style("opacity", null);
-                    brush();                    
+                    brush();
+
+                    //Background Lines
+                    paths(data, background, brush_count, true);
 
                     //Input/Output Label
                     drawLabels();
@@ -363,7 +371,7 @@ function load_dataset(fileData) {
                 d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));
             }
         })
-        .style("font-size", "1.90vmin")        
+        .style("font-size", "18px")        
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .append("svg:text")
@@ -387,6 +395,7 @@ function load_dataset(fileData) {
     setupBrushes(g);    // Add and store a brush for each axis.
     tableSelect = []; //In case new file is loaded, this resets selection
     brush(); // Render full foreground
+    paths(data, background, brush_count, true); //Background Lines
     drawLabels(); //Input/Output Labels
     setupTable(selected, data);   
     d3.selectAll(".box").remove(); //Remove existing Boxes
@@ -395,7 +404,7 @@ function load_dataset(fileData) {
 
 const styleTicks = (group) => {
     group.selectAll(".tick")
-        .style("font-size", "1.774vmin")     
+        .style("font-size", "17px")     
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b");
 };
@@ -405,7 +414,7 @@ const addExtraLabels = (group) => {
     group.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "1.774vmin")      
+        .style("font-size", "17px")      
         .style('font-family', '"RobotoRegular"')
         .style('color', "#969696")
         .attr('class', 'magnitude font-RR14 fill7')
@@ -436,7 +445,7 @@ const styleTargets = (group) => {
                 tick.children[0].setAttribute('x2', '-20');
                 tick.children[0].setAttribute('x1', '20');               
                 tick.children[0].style.strokeWidth = 4;
-                tick.children[0].style.stroke = '#ff5252';
+                tick.children[0].style.stroke = '#a71717';
             }            
         }
     });
@@ -846,6 +855,9 @@ function update_ticks(d, extent) {
 
     brush_count++;
     brush();
+
+    //Background Lines
+    setTimeout(function () { paths(data, background, brush_count, true) }, 1000);     
 }
 
 // Rescale to new dataset domain
@@ -974,7 +986,10 @@ const renderResize = () => {
         setupTable(selected, data);        
 
         // render data
-        brush();        
+        brush();
+
+        //Background Lines
+        paths(data, background, brush_count, true);
 
         //Input/Output Labels
         drawLabels();
@@ -985,7 +1000,7 @@ const renderResize = () => {
 
         //Tick style font
         d3.selectAll(".tick")
-            .style("font-size", "1.774vmin")
+            .style("font-size", "17px")
             .style('font-family', '"RobotoMedium"')
             .style('color', "#58595b")
     }    
@@ -1078,7 +1093,7 @@ function setupTable(selected, data) {
         .data(column_names)
         .enter()
         .append("th")     
-        .style("font-size", "1.9vmin")
+        .style("font-size", "18px")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .attr("class", "mozFontFix")
@@ -1114,7 +1129,7 @@ function setupTable(selected, data) {
         .enter()
         .append("td")
         .text(function (d) { return d; })
-        .style("font-size", "1.9vmin")
+        .style("font-size", "18px")
         .style('font-family', '"RobotoLight"')
         .style('color', "#4e4f4f");    
 
@@ -1339,7 +1354,7 @@ function drawLabels() {
         })
         .append("text")
         .attr("text-anchor", "middle")      
-        .style("font-size", "2.15vmin")        
+        .style("font-size", "20px")        
         .style('font-family', '"BarlowBold"')
         .style('color', "#4e4f4f")
         .style('letter-spacing', "2px")
