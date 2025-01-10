@@ -5,6 +5,12 @@
 // For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+// Ideas for overlapping
+
+// - Maybe brush and rerender the axis to zoom into the brushed section
+// - Add opacity to colors => Opacity darkens colors and makes line thinner
+// - regenerate scale when brushing
+
 let width = document.body.clientWidth,
     // heightCoefficient determines screen space the graph will have
     heightCoefficient = .55,
@@ -54,7 +60,7 @@ let m = [120, 40, 70, 40],
 //HSL
 var colors = {
     "test": [225, 53, 70],
-    "background": [225, 5, 59]
+    "background": [225, 5, 80]
 };
 
 // handle upload button
@@ -103,7 +109,7 @@ d3.selectAll("canvas")
 foreground = document.getElementById('foreground').getContext('2d');
 foreground.globalCompositeOperation = "destination-over";
 foreground.strokeStyle = "rgba(0,100,160,1)";
-foreground.lineWidth = 1;
+foreground.lineWidth = 2;
 
 // Highlight canvas for temporary interactions
 highlighted = document.getElementById('highlight').getContext('2d');
@@ -131,7 +137,7 @@ svg.append('defs')
     .text((styles));
 
 d3.selectAll(".file-upload")
-    .style("font-size", "2.15vmin")    
+    .style("font-size", "20px")    
     .style('font-family', '"RobotoRegular"')
     .style('color', "#5e676d")         
 
@@ -353,9 +359,9 @@ function load_dataset(fileData) {
 
                 // Add Targets to ticks
                 const target = targets.find(target => target.name === d);
-                if(target) {                    
+                if(target) {
                     ticks.push(+target.target);
-                }                         
+                }
                 
                 d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));                
             }
@@ -364,7 +370,7 @@ function load_dataset(fileData) {
                 d3.select(this).call(axis.scale(yscale[d]).tickPadding([15]));
             }
         })
-        .style("font-size", "1.90vmin")        
+        .style("font-size", "18px")        
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .append("svg:text")
@@ -397,7 +403,7 @@ function load_dataset(fileData) {
 
 const styleTicks = (group) => {
     group.selectAll(".tick")
-        .style("font-size", "1.774vmin")     
+        .style("font-size", "17px")     
         .style('font-family', '"RobotoMedium"')
         .style('color', "#58595b");
 };
@@ -407,7 +413,7 @@ const addExtraLabels = (group) => {
     group.append("svg:g")
         .append("text")
         .attr("text-anchor", "middle")
-        .style("font-size", "1.774vmin")      
+        .style("font-size", "17px")      
         .style('font-family', '"RobotoRegular"')
         .style('color', "#969696")
         .attr('class', 'magnitude font-RR14 fill7')
@@ -470,7 +476,6 @@ function render_range(selection, i, max, opacity, ctx) {
     let isForeground = ctx === foreground;
     selection.slice(i, max).forEach(function (d) {
         let pColor;
-
         if (isForeground) pColor = myColor(d[refAxis]);
         else pColor = color("background", 0.4);
         console.log(d, 'd');
@@ -799,7 +804,7 @@ function paths(selected, ctx, count) {
 // transition ticks for reordering, rescaling and inverting
 function update_ticks(d, extent) {
 
-    resetBrushes();  
+    resetBrushes();
        
     // update axes
     d3.selectAll(".axis")
@@ -815,8 +820,13 @@ function update_ticks(d, extent) {
                     val.push(e[d]);
                 });
                 let minAndMax = d3.extent(val);
-
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+
+                // Add Targets to ticks
+                const target = targets.find(target => target.name === d);
+                if(target) {
+                    ticks.push(+target.target);
+                }
 
                 d3.select(this)
                     .transition()
@@ -928,10 +938,6 @@ const renderResize = () => {
             .attr("height", h + 2)
             .style("padding", m.join("px ") + "px");
 
-        foreground.lineWidth = 1.7;
-        background.lineWidth = 1.7;
-        highlight.lineWidth = 4;
-
         d3.select("svg")
             .attr("width", w + m[1] + m[3])
             .attr("height", h + m[0] + m[2])
@@ -956,14 +962,19 @@ const renderResize = () => {
             d3.selectAll(".axis")
                 .each(function (d) {                    
                     if (_.isNumber(data[0][d])) {
-
                         let val = [];
                         data.map(function (e) {
                             val.push(e[d]);
                         });
                         let minAndMax = d3.extent(val);
-
                         let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+
+                        // Add Targets to ticks
+                        const target = targets.find(target => target.name === d);
+                        if(target) {
+                            ticks.push(+target.target);
+                        }
+
                         d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
                     }
                     else {
@@ -989,7 +1000,7 @@ const renderResize = () => {
 
         //Tick style font
         d3.selectAll(".tick")
-            .style("font-size", "1.774vmin")
+            .style("font-size", "17px")
             .style('font-family', '"RobotoMedium"')
             .style('color', "#58595b")
     }    
@@ -1082,7 +1093,7 @@ function setupTable(selected, data) {
         .data(column_names)
         .enter()
         .append("th")     
-        .style("font-size", "1.9vmin")
+        .style("font-size", "18px")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
         .attr("class", "mozFontFix")
@@ -1118,7 +1129,7 @@ function setupTable(selected, data) {
         .enter()
         .append("td")
         .text(function (d) { return d; })
-        .style("font-size", "1.9vmin")
+        .style("font-size", "18px")
         .style('font-family', '"RobotoLight"')
         .style('color', "#4e4f4f");    
 
@@ -1343,7 +1354,7 @@ function drawLabels() {
         })
         .append("text")
         .attr("text-anchor", "middle")      
-        .style("font-size", "2.15vmin")        
+        .style("font-size", "20px")        
         .style('font-family', '"BarlowBold"')
         .style('color', "#4e4f4f")
         .style('letter-spacing', "2px")
@@ -1554,13 +1565,13 @@ function getColorArray(values) {
         return ["#0c74bb"]
     }
     else if (values.length === 2) {
-        return ["#98c11d", "#0c74bb"]
+        return ["#98c11d", "#0076bd"]
     }
     else if (values.length === 3) {
-        return ["#98c11d", "#33735f", "#0c74bb"]
+        return ["#98c11d", "#33735f", "#0076bd"]
     }
     else {
-        return ["#98c11d", "#33735f", "#0c74bb", "#0c3c5e", "#032135"];
+        return ["#98c11d", "#33735f", "#0076bd"];
     }
 }
 
