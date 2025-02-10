@@ -823,8 +823,8 @@ function update_ticks(d, extent) {
 
                 // Add Targets to ticks
                 const target = targets.find(target => target.name === d);
-                if(target) {
-                    ticks.push(+target.target);
+                if(isValidTarget(target?.target)) {
+                    ticks.push(+target.target); 
                 }
 
                 d3.select(this)
@@ -970,8 +970,8 @@ const renderResize = () => {
 
                         // Add Targets to ticks
                         const target = targets.find(target => target.name === d);
-                        if(target) {
-                            ticks.push(+target.target);
+                        if(isValidTarget(target?.target)) {
+                            ticks.push(+target.target); 
                         }
 
                         d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
