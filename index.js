@@ -357,14 +357,15 @@ function load_dataset(fileData) {
                 let minAndMax = d3.extent(val);
 
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
+                console.log(ticks, 'ticks');
 
                 // Add Targets to ticks
                 const target = targets.find(target => target.name === d);
-                if(target) {
-                    ticks.push(+target.target);
-                }
-                
-                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));                
+                if(isValidTarget(target)) {
+                    ticks.push(+target.target);   
+                }   
+
+                d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));          
             }
             else {
                 axis = d3.svg.axis().orient("left").ticks(1 + height / 50);  
@@ -983,7 +984,12 @@ const renderResize = () => {
                     }
                 });           
 
-        setupTable(selected, data);        
+        setupTable(selected, data);    
+        
+        // Resetting lineWidth before rendering just in case
+        foreground.lineWidth = 2;
+        highlighted.lineWidth = 4;
+        background.lineWidth = 1;
 
         // render data
         brush();
@@ -1386,7 +1392,7 @@ function removeFromArrays(d) {
 
 d3.select('#expand-button').on('click', () => {     
     expandedMode = true;
-    heightCoefficient = 0.85;
+    heightCoefficient = 0.55;
     renderResize();
     d3.select('#expand-button').style('display', 'none');
     d3.select('#collapse-button').style('display', 'inline-flex');
@@ -1593,4 +1599,18 @@ function checkValues(dimension) {
     return _.uniq(values).some(function (d) {
         return _.isNumber(d)
     });       
+}
+
+const isValidTarget = (target) => {
+    if(target && isNumeric(target)) {
+        return true;        
+    } 
+
+    return false;
+}
+
+const isNumeric = (str) => {
+    if (typeof str != "string") return false // we only process strings!  
+    return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+            !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
 }
