@@ -5,6 +5,7 @@
 // For AMEGroup
 // Released under the BSD License: http://opensource.org/licenses/BSD-3-Clause
 
+
 // Ideas for overlapping
 
 // - Maybe brush and rerender the axis to zoom into the brushed section
@@ -354,15 +355,13 @@ function load_dataset(fileData) {
                     val.push(e[d]);
                 });
                 let minAndMax = d3.extent(val);
-
                 let ticks = getTicks(minAndMax[0], minAndMax[1], 8);
-                console.log(ticks, 'ticks');
 
                 // Add Targets to ticks
                 const target = targets.find(target => target.name === d);
-                if(isValidTarget(target)) {
-                    ticks.push(+target.target);   
-                }   
+                if(isValidTarget(target?.target)) {
+                    ticks.push(+target.target); 
+                }
 
                 d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));          
             }
@@ -825,8 +824,8 @@ function update_ticks(d, extent) {
 
                 // Add Targets to ticks
                 const target = targets.find(target => target.name === d);
-                if(target) {
-                    ticks.push(+target.target);
+                if(isValidTarget(target?.target)) {
+                    ticks.push(+target.target); 
                 }
 
                 d3.select(this)
@@ -972,8 +971,8 @@ const renderResize = () => {
 
                         // Add Targets to ticks
                         const target = targets.find(target => target.name === d);
-                        if(target) {
-                            ticks.push(+target.target);
+                        if(isValidTarget(target?.target)) {
+                            ticks.push(+target.target); 
                         }
 
                         d3.select(this).call(axis.scale(yscale[d]).tickValues(ticks).tickPadding([15]));
@@ -1392,16 +1391,14 @@ function removeFromArrays(d) {
 
 d3.select('#expand-button').on('click', () => {     
     expandedMode = true;
-    heightCoefficient = 0.55;
-    renderResize();
+    d3.selectAll("#table").style('display', 'none');
     d3.select('#expand-button').style('display', 'none');
     d3.select('#collapse-button').style('display', 'inline-flex');
 });
 
 d3.select('#collapse-button').on('click', () => {    
     expandedMode = false;
-    heightCoefficient = 0.55;
-    renderResize();
+    d3.selectAll("#table").style('display', 'block');
     d3.select('#collapse-button').style('display', 'none');
     d3.select('#expand-button').style('display', 'inline-flex');
 });
