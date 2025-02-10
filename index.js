@@ -478,6 +478,7 @@ function render_range(selection, i, max, opacity, ctx) {
         let pColor;
         if (isForeground) pColor = myColor(d[refAxis]);
         else pColor = color("background", 0.4);
+        console.log(d, 'd');
         path(d, ctx, pColor);
     });
 };
