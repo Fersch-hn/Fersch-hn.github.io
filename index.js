@@ -1093,6 +1093,8 @@ function setupTable(selected, data) {
     var table = d3.selectAll("#FilterableTable").append("table");
     table.append("thead").append("tr");
 
+    const columnWidth = 100 / column_names.length;
+
     var headers = table.selectAll("tr").selectAll("th")
         .data(column_names)
         .enter()
@@ -1100,9 +1102,9 @@ function setupTable(selected, data) {
         .style("font-size", "18px")
         .style('font-family', '"RobotoBold"')
         .style('color', "#4e4f4f")
+        .style('width', `${columnWidth}%`)
         .attr("class", "mozFontFix")
-
-        .text(function (d) { return d; });    
+        .text(function (d) { return d; });
 
     // draw table body with rows
     var tableBody = table.append("tbody")
